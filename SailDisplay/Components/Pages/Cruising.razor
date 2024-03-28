@@ -1,32 +1,46 @@
 ﻿@page "/"
-@page "/cruising"
+@rendermode InteractiveServer
 
-<h3>Cruising</h3>
+@using Microsoft.AspNetCore.SignalR.Client
+@using SailDisplay.Components.Data
+@using SailDisplay.Components.Hubs
 
-<div style="color: white">
-    <h4>Heading</h4>
-    <h1>047°</h1>
-    <h5>T</h5>
+@inject NetService netService
+@inject NavigationManager navigationManager
+@inject IConfiguration configuration
+@inject BrowserService bs
+
+
+<div style="height: 25%">
+    <Field DataType=NetHub.eDataType.Heading></Field>
+</div>
+<div style="height: 25%">
+    <Field DataType=NetHub.eDataType.STW></Field>
+</div>
+<div style="height: 25%">
+    <Field DataType=NetHub.eDataType.COG></Field>
+</div>
+<div style="height: 25%">
+    <Field DataType=NetHub.eDataType.SOG></Field>
 </div>
 
-<div style="color: blue">
-    <h4>STW</h4>
-    <h1>5.3</h1>
-    <h5>kts</h5>
-</div>
-
-<div style="color: green">
-    <h4>COG</h4>
-    <h1>053°</h1>
-    <h5>T</h5>
-</div>
-
-<div style="color: purple">
-    <h4>SOG</h4>
-    <h1>5.4</h1>
-    <h5>kts</h5>
-</div>
+<p id="demo"></p>
 
 @code {
+    public int Height { get; set; }
+    public int Width { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await GetDimensions();
+    
+    async Task GetDimensions()
+    {
+        var dimension = await bs.GetDimensions();
+        Height = dimension.Height;
+        Width = dimension.Width;
+    }
+
+    }
 }

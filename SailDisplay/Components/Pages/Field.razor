@@ -1,0 +1,113 @@
+﻿@using SailDisplay.Components.Hubs
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using SailDisplay.Components.Data
+@using SailDisplay.Components.Hubs
+@using System.Drawing;
+
+@inject NetService netService
+@inject NavigationManager navigationManager
+@inject IConfiguration configuration
+
+<div style="color: @Color; width: 100%; position: relative; text-align: center">
+
+        <text style="position: absolute; top: 8px; left: 16px;">@Name</text>
+        <text style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px">@Value</text>
+        <text style="position: absolute; bottom: 8px; right: 16px">@Unit</text>
+   
+    </div>
+
+
+@code {
+    [Parameter]
+    public NetHub.eDataType DataType { get; set; }
+    
+    public string Name
+    {
+        get
+        {
+            switch (DataType)
+            {
+                default:
+                    return DataType.ToString() ;
+            }
+        }
+    }
+    public string Unit
+    {
+        get
+        {
+            switch (DataType)
+            {
+                case NetHub.eDataType.COG:
+                case NetHub.eDataType.Heading:
+                    return "T";
+                case NetHub.eDataType.STW:
+                case NetHub.eDataType.SOG:
+                    return "kts";
+                default:
+                    return "Unknown";
+            }
+        }
+    }
+    public string Color
+    {
+        get
+        {
+            Color c;
+            switch (DataType)
+            {
+                case NetHub.eDataType.SOG:
+                    c = System.Drawing.Color.Purple;
+                    break;
+                case NetHub.eDataType.COG:
+                    c = System.Drawing.Color.Green;
+                    break;
+                case NetHub.eDataType.Heading:
+                    c = System.Drawing.Color.White;
+                    break;
+                case NetHub.eDataType.STW:
+                    c = System.Drawing.Color.Blue;
+                    break;
+                default:
+                    c = System.Drawing.Color.White;
+                    break;
+            }
+            return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+        }
+    }
+
+    public string Value { get; private set; }
+
+
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
+            .Build();
+
+        hubConnection.On<NetHub.eDataType, double>("Data", (t, o) =>
+        {
+            if (t == DataType)
+            {
+                if (t == NetHub.eDataType.SOG || t == NetHub.eDataType.STW)
+                {
+                    var temp = o;
+                    Value = Math.Round((double)o, 2).ToString();
+                }
+                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading)
+                {
+                    Value = Math.Round(o, 0).ToString() + "°";
+                }
+                InvokeAsync(StateHasChanged);
+            }
+        });
+        await hubConnection.StartAsync();
+        await base.OnInitializedAsync();
+
+
+    }
+
+}

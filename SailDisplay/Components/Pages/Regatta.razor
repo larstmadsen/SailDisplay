@@ -1,6 +1,19 @@
 ﻿@page "/regatta"
+
+[Route("/regatta")]
+
 <h3>Regatta</h3>
 
-@code {
+<h3>@SOG</h3>
+<button @onclick="Test">Test</button>
 
+
+@code {
+    double SOG;
+    
+    public async Task Test()
+    {
+        Console.WriteLine("Test function called");
+        SOG++;
+    }
 }
