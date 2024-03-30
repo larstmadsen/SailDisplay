@@ -11,16 +11,16 @@
 @inject BrowserService bs
 
 
-<div style="height: 25%">
+<div style="height: 24vh">
     <Field DataType=NetHub.eDataType.Heading></Field>
 </div>
-<div style="height: 25%">
+<div style="height: 24vh">
     <Field DataType=NetHub.eDataType.STW></Field>
 </div>
-<div style="height: 25%">
+<div style="height: 24vh">
     <Field DataType=NetHub.eDataType.COG></Field>
 </div>
-<div style="height: 25%">
+<div style="height: 24vh">
     <Field DataType=NetHub.eDataType.SOG></Field>
 </div>
 
@@ -33,7 +33,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await GetDimensions();
+        //await GetDimensions();
     
     async Task GetDimensions()
     {

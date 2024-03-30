@@ -9,13 +9,20 @@
 @inject NavigationManager navigationManager
 @inject IConfiguration configuration
 
-<div style="color: @Color; width: 100%; position: relative; text-align: center">
 
-        <text style="position: absolute; top: 8px; left: 16px;">@Name</text>
-        <text style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px">@Value</text>
-        <text style="position: absolute; bottom: 8px; right: 16px">@Unit</text>
-   
-    </div>
+<table style="color: @Color; width: 100%; height: 100%; font-weight: bold">
+    <tr>
+        <td><text style="font-size: 50px">@Name</text></td>
+        
+    </tr>
+    <tr>
+        <td width="10%"></td>
+        <td style="text-align: center; vertical-align: central" width="80%"><text style="font-size: 150px">@Value</text></td>
+        <td style="text-align: right; vertical-align: bottom" width="10"><text style="font-size: 50px">@Unit</text></td>
+    </tr>
+</table>
+<p></p>
+
 
 
 @code {
@@ -95,11 +102,11 @@
                 if (t == NetHub.eDataType.SOG || t == NetHub.eDataType.STW)
                 {
                     var temp = o;
-                    Value = Math.Round((double)o, 2).ToString();
+                    Value = Math.Round((double)o, 2).ToString("##.00");
                 }
                 else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading)
                 {
-                    Value = Math.Round(o, 0).ToString() + "°";
+                    Value = Math.Round(o, 0).ToString("000") + "°";
                 }
                 InvokeAsync(StateHasChanged);
             }

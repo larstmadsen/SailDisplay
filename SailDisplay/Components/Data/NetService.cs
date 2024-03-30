@@ -57,13 +57,13 @@ namespace SailDisplay.Components.Data
                 SOG += r.Next(-5, 5) * 0.01;
                 await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.SOG, SOG);
 
-                COG += r.Next(-5, 5) * 0.01;
+                COG += r.Next(-5, 5) * 0.1;
                 await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.COG, COG);
 
                 STW += r.Next(-5, 5) * 0.01;
                 await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.STW, STW);
 
-                Heading += r.Next(-5, 5) * 0.01;
+                Heading += r.Next(-5, 5) * 0.1;
                 await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.Heading, Heading);
 
 
