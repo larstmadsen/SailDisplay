@@ -7,29 +7,44 @@ namespace SailDisplay.Components.Data
     public class NetService
     {
         private static Thread workerThread;
+        private static bool workerThreadActive = true;
         private readonly IHubContext<NetHub> _hub;
         private static bool workerBusy = false;
+
+        private YachtDevice.YachtDevice ds;
 
         public double SOG { get; private set; } = 6.0;
         public double COG { get; private set; } = 34.0;
         public double STW { get; private set; } = 6.0;
         public double Heading { get; private set; } = 34.0;
+        public double HeadingToWP { get; private set; } = 34.0;
+        public double Heeling { get; private set; } = 0.0;
+        public DateTime StartTimestamp { get; set; } = DateTime.Now.AddMinutes(10);
+
+        public GeoCordinate StartPort { get; set; } = new GeoCordinate(5537.484, 1258.904);
+        public GeoCordinate StartStarboard { get; set; } = new GeoCordinate(5537.541, 1259.033);
+        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.600, 1259.000);
 
         public NetService(IHubContext<NetHub> hub)
         {
             _hub = hub;
+            if (false) //Simulate
+            {
+                ds = new YachtDevice.YachtDevice();
+            }
 
-            if (workerThread == null)
+            Task workerThread = Task.Run(async () => await Worker());
+            /*if (workerThread == null)
             {
                 workerThread = new Thread(WorkerThread);
                 workerThread.Start();
                 Console.WriteLine("NetService WorkerThread start");
-            }
+            }*/
 
 
         }
 
-        public void WorkerThread()
+        /*public async Task WorkerThread()
         {
             new Thread(() =>
             {
@@ -37,37 +52,65 @@ namespace SailDisplay.Components.Data
                 Console.WriteLine("NetService Thread Subscripe");
             }).Start();
 
-            while (true)
+            while (workerThreadActive)
             {
                 Worker();
-                Thread.Sleep(500);
             }
-        }
+        }*/
         public async Task Worker()
         {
-            if (!workerBusy)
+            while (workerThreadActive)
             {
+                if (true)//Simulate
+                {
+                    Random r = new Random();
 
-                workerBusy = true;
+                    SOG += r.Next(-5, 5) * 0.01;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.SOG, SOG);
 
-                Console.WriteLine("NetService Worker");
+                    COG += r.Next(-5, 5) * 0.1;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.COG, COG);
 
-                Random r = new Random();
+                    STW += r.Next(-5, 5) * 0.01;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.STW, STW);
 
-                SOG += r.Next(-5, 5) * 0.01;
-                await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.SOG, SOG);
+                    Heading += r.Next(-5, 5) * 0.1;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heading, Heading);
 
-                COG += r.Next(-5, 5) * 0.1;
-                await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.COG, COG);
+                    Heeling += r.Next(-2, 2) * 0.1;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heeling, Heeling);
 
-                STW += r.Next(-5, 5) * 0.01;
-                await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.STW, STW);
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.HeadingToWP, HeadingToWP);
 
-                Heading += r.Next(-5, 5) * 0.1;
-                await _hub.Clients.All.SendAsync("Data", NetHub.eDataType.Heading, Heading);
+                    TimeSpan ts = StartTimestamp - DateTime.Now;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TimeToStart, ts.TotalSeconds);
+
+                    ActualPosition = new GeoCordinate(ActualPosition.Latitude-0.001, ActualPosition.Longitude);
+                    await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.Position, ActualPosition);
+
+                    GeoLine glStart = new GeoLine(StartPort, StartStarboard);
+                    GeoLine glActual = new GeoLine(ActualPosition, Heading);
+
+                    GeoCordinate cross = glStart.CrossingPoint(glActual);
+                    if (cross != null)
+                    {
+                        double distance = await ActualPosition.GetDistanceTo_Meter(cross);
+                        await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.DistanceToStartLine, distance);
+                    }
+                    else
+                    {
+                        await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.DistanceToStartLine, 0);
+                    }
+
+                    Thread.Sleep(500);
+                }
+                else
+                { 
+                
+                }
 
 
-                workerBusy = false;
+
             }
         }
 

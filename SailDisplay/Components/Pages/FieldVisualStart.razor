@@ -1,0 +1,161 @@
+﻿@using SailDisplay.Components.Hubs
+
+@using Microsoft.AspNetCore.SignalR.Client
+@using SailDisplay.Components.Data
+@using SailDisplay.Components.Hubs
+@using System.Drawing;
+
+@inject NetService netService
+@inject NavigationManager navigationManager
+@inject IConfiguration configuration
+
+@if (Position != null && MarkPort != null && MarkStarboard != null)
+{
+    <svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">
+        <line x1="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" y1="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" x2="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" y2="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke: white;stroke-width:3"></line>
+        <circle r="1%" cx="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" style="stroke:red;stroke-width:10" />
+        <circle r="1%" cx="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke:green;stroke-width:10" />
+
+        @if (StartLineCrossingPoint != null)
+        {
+            <line x1="@(TransformLongitude_0_1000(Position.Longitude)/2)" y1="@(TransformLatitude_0_1000(Position.Latitude)/2)" x2="@(TransformLongitude_0_1000(StartLineCrossingPoint.Longitude)/2)" y2="@(TransformLatitude_0_1000(StartLineCrossingPoint.Latitude)/2)" style="stroke: white;stroke-width:3"></line>
+        }
+        <g transform="translate(@(TransformLongitude_0_1000(Position.Longitude)/2),@(TransformLatitude_0_1000(Position.Latitude)/2)) rotate(@Heading) ">
+            <path id="lineAB" d="M -15 60 q -3 -40 15 -70" stroke="blue" fill="none" stroke-width="4" />
+            <path id="lineCB" d="M 15 60 q 3 -40 -15 -70" stroke="blue" fill="none" stroke-width="4" />
+            <path id="lineAB" d="M -15 60 l 30 0" stroke="blue" stroke-width="4" />
+        </g>
+
+       
+        <circle r="1%" cx="@(TransformLongitude_0_1000(Position.Longitude)/2)" cy="@(TransformLatitude_0_1000(Position.Latitude)/2)" style="stroke:blue;stroke-width:10" />
+    </svg>
+
+    
+}
+
+@code {
+    private HubConnection? hubConnection;
+    private GeoCordinate Position { get; set; }
+    private GeoCordinate MarkPort { get; set; }
+    private GeoCordinate MarkStarboard { get; set; }
+    private GeoCordinate StartLineCrossingPoint { get; set; } //Cordinate where the boat is crossing startline
+    private double Heading { get; set; }
+    private double COG { get; set; }
+
+    private double TransformLongitude_0_1000(double x)
+    {
+        var minLongitude = Math.Min(Math.Min(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
+        var maxLongitude = Math.Max(Math.Max(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
+        var diffLongitude = maxLongitude - minLongitude;
+        var minLatitude = Math.Min(Math.Min(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
+        var maxLatitude = Math.Max(Math.Max(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
+        var diffLatitude = maxLatitude - minLatitude;
+
+        if(diffLongitude > diffLatitude)
+        {
+            var offset = minLongitude - diffLongitude * 0.05;
+            var scale = 1000 / (diffLongitude * 1.1);
+            var res = (x - offset) * scale;
+            return res;
+        }
+        else
+        {
+            var scale = 1000 / (diffLatitude * 1.1);
+
+
+            var offset = minLongitude+diffLongitude/2 -500/scale;
+
+
+            var res = (x - offset) * scale;
+            return res;
+        }
+    }
+    private double TransformLatitude_0_1000(double y)
+    {
+        var minLongitude = Math.Min(Math.Min(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
+        var maxLongitude = Math.Max(Math.Max(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
+        var diffLongitude = maxLongitude - minLongitude;
+        var minLatitude = Math.Min(Math.Min(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
+        var maxLatitude = Math.Max(Math.Max(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
+        var diffLatitude = maxLatitude - minLatitude;
+
+        if (diffLongitude < diffLatitude)
+        {
+            var offset = minLatitude - diffLatitude * 0.05;
+            var scale = 1000 / (diffLatitude * 1.1);
+            var res = (y - offset) * scale;
+            return res;
+        }
+        else
+        {
+            var scale = 1000 / (diffLongitude * 1.1);
+
+
+            var offset = minLatitude + diffLatitude / 2 - 500 / scale;
+
+
+            var res = (y - offset) * scale;
+            return res;
+        }
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        MarkStarboard = netService.StartStarboard;
+        MarkPort = netService.StartPort;
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
+            .Build();
+
+        hubConnection.On<NetHub.eDataType, GeoCordinate>("GeoCordinate", (t, o) =>
+        {
+            if (t == NetHub.eDataType.Position)
+            {
+                Position = o;
+                InvokeAsync(StateHasChanged);
+            }
+            else if (t == NetHub.eDataType.StartMarkPort)
+            {
+                MarkPort = o;
+                InvokeAsync(StateHasChanged);
+            }
+            else if (t == NetHub.eDataType.StartMarkStarboard)
+            {
+                MarkStarboard = o;
+                InvokeAsync(StateHasChanged);
+            }
+
+
+        });
+
+        hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
+        {
+            if (t == NetHub.eDataType.Heading)
+            {
+                Heading = o;
+                InvokeAsync(StateHasChanged);
+            }
+            else if (t == NetHub.eDataType.COG)
+            {
+                COG = o;
+                if (MarkPort != null && MarkStarboard != null && Position != null)
+                {
+                    GeoLine startLine = new GeoLine(MarkPort, MarkStarboard);
+                    GeoLine sailDirection = new GeoLine(Position, COG);
+                    StartLineCrossingPoint = startLine.CrossingPoint(sailDirection);
+                }
+                
+                InvokeAsync(StateHasChanged);
+            }
+            
+
+        });
+
+        await hubConnection.StartAsync();
+        await base.OnInitializedAsync();
+
+
+    }
+}

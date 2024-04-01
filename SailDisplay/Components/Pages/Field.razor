@@ -9,10 +9,9 @@
 @inject NavigationManager navigationManager
 @inject IConfiguration configuration
 
-
 <table style="color: @Color; width: 100%; height: 100%; font-weight: bold">
     <tr>
-        <td><text style="font-size: 50px">@Name</text></td>
+        <td colspan="3"><text style="font-size: 50px">@Name</text></td>
         
     </tr>
     <tr>
@@ -21,14 +20,13 @@
         <td style="text-align: right; vertical-align: bottom" width="10"><text style="font-size: 50px">@Unit</text></td>
     </tr>
 </table>
-<p></p>
 
 
 
 @code {
     [Parameter]
     public NetHub.eDataType DataType { get; set; }
-    
+
     public string Name
     {
         get
@@ -48,12 +46,16 @@
             {
                 case NetHub.eDataType.COG:
                 case NetHub.eDataType.Heading:
+                case NetHub.eDataType.HeadingToWP:
+                case NetHub.eDataType.Heeling:
                     return "T";
                 case NetHub.eDataType.STW:
                 case NetHub.eDataType.SOG:
                     return "kts";
+                case NetHub.eDataType.DistanceToStartLine:
+                    return "m";
                 default:
-                    return "Unknown";
+                    return "";
             }
         }
     }
@@ -95,19 +97,37 @@
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
 
-        hubConnection.On<NetHub.eDataType, double>("Data", (t, o) =>
+        hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
         {
             if (t == DataType)
             {
                 if (t == NetHub.eDataType.SOG || t == NetHub.eDataType.STW)
                 {
                     var temp = o;
-                    Value = Math.Round((double)o, 2).ToString("##.00");
+                    Value = Math.Round((double)o, 2).ToString("#0.00");
                 }
-                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading)
+                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingToWP || t == NetHub.eDataType.Heeling)
                 {
                     Value = Math.Round(o, 0).ToString("000") + "°";
                 }
+                else if (t == NetHub.eDataType.TimeToStart)
+                {
+                    TimeSpan ts = TimeSpan.FromSeconds(o);
+                    Value = ts.ToString(@"mm\:ss");
+                }
+                else if(t == NetHub.eDataType.DistanceToStartLine)
+                {
+                    if (o == 0)
+                    {
+                        Value = "-";
+                    }
+                    else
+                    {
+                        Value = Math.Round(o, 0).ToString();
+                    }
+                    
+                }
+
                 InvokeAsync(StateHasChanged);
             }
         });
