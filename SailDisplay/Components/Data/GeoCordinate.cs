@@ -50,12 +50,12 @@
                 return (t1 - t2 + t3);
             }
         }
-        public async Task<double> GetDistanceTo_NauticMiles(GeoCordinate other)
+        public double GetDistanceTo_NauticMiles(GeoCordinate other)
         {
 
-            return (await GetDistanceTo_Meter(other) / 1852);
+            return (GetDistanceTo_Meter(other) / 1852);
         }
-        public async Task<double> GetDistanceTo_Meter(GeoCordinate other)
+        public double GetDistanceTo_Meter(GeoCordinate other)
         {
             if (other == null || double.IsNaN(LatitudeWGS84Decimal) || double.IsNaN(LongitudeWGS84Decimal) || double.IsNaN(other.LatitudeWGS84Decimal) ||
                 double.IsNaN(other.LongitudeWGS84Decimal))

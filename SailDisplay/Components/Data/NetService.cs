@@ -13,6 +13,9 @@ namespace SailDisplay.Components.Data
 
         private YachtDevice.YachtDevice ds;
 
+        public double TWA { get; private set; } = 0.0;
+        public double TWS { get; private set; } = 6.0;
+
         public double SOG { get; private set; } = 6.0;
         public double COG { get; private set; } = 34.0;
         public double STW { get; private set; } = 6.0;
@@ -65,6 +68,12 @@ namespace SailDisplay.Components.Data
                 {
                     Random r = new Random();
 
+                    TWS += r.Next(-1, 1) * 0.01;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWS, TWS);
+
+                    TWA += r.Next(-1, 1) * 0.01;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWA, TWA);
+
                     SOG += r.Next(-5, 5) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.SOG, SOG);
 
@@ -94,12 +103,12 @@ namespace SailDisplay.Components.Data
                     GeoCordinate cross = glStart.CrossingPoint(glActual);
                     if (cross != null)
                     {
-                        double distance = await ActualPosition.GetDistanceTo_Meter(cross);
-                        await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.DistanceToStartLine, distance);
+                        double distance = ActualPosition.GetDistanceTo_Meter(cross);
+                        await _hub.Clients.All.SendAsync("double", NetHub.eDataType.DistanceToStartLine, distance);
                     }
                     else
                     {
-                        await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.DistanceToStartLine, 0);
+                        await _hub.Clients.All.SendAsync("double", NetHub.eDataType.DistanceToStartLine, 0);
                     }
 
                     Thread.Sleep(500);

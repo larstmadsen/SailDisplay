@@ -7,10 +7,10 @@
             G1 = g1;
             G2 = g2;
         }
-        public GeoLine(GeoCordinate g1, double direction)
+        public GeoLine(GeoCordinate g1, double angel)
         {
             G1 = g1;
-            G2 = new GeoCordinate(g1.Latitude+Math.Sin(direction), g1.Longitude+Math.Cos(direction));
+            G2 = new GeoCordinate(g1.Latitude-Math.Cos(angel * Math.PI / 180.0), g1.Longitude+Math.Sin(angel * Math.PI / 180.0));
         }
         public GeoCordinate G1 { get; private set; }
         public GeoCordinate G2 { get; private set; }
