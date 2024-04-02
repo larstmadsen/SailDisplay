@@ -14,7 +14,11 @@ namespace SailDisplay.Components.Data
         private YachtDevice.YachtDevice ds;
 
         public double TWA { get; private set; } = 45.0;
+
         public double TWS { get; private set; } = 6.0;
+
+        public double AWA { get; private set; } = 0;
+        public double AWS { get; private set; } = 0;
 
         public double SOG { get; private set; } = 15.0;
         public double COG { get; private set; } = -6.0;
@@ -73,8 +77,14 @@ namespace SailDisplay.Components.Data
                     TWS += r.Next(-1, 1) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWS, TWS);
 
-                    TWA += r.Next(-1, 1) * 0.01;
+                    TWA += r.Next(-1, 1) * 1;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWA, TWA);
+
+                    AWS = TWS * 1.1;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.AWS, AWS);
+
+                    AWA = TWA * 0.8;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.AWA, AWA);
 
                     SOG += r.Next(-5, 5) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.SOG, SOG);
