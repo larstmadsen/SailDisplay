@@ -54,6 +54,8 @@
                     return "kts";
                 case NetHub.eDataType.DistanceToStartLine:
                     return "m";
+                case NetHub.eDataType.TimeToBurn:
+                    return "s";
                 default:
                     return "";
             }
@@ -78,6 +80,9 @@
                 case NetHub.eDataType.STW:
                     c = System.Drawing.Color.Blue;
                     break;
+                case NetHub.eDataType.TimeToBurn:
+                    c = DynamicColor;
+                    break;
                 default:
                     c = System.Drawing.Color.White;
                     break;
@@ -85,7 +90,8 @@
             return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
         }
     }
-
+    private Color DynamicColor { get; set; }
+    
     public string Value { get; private set; }
 
 
@@ -115,20 +121,51 @@
                     TimeSpan ts = TimeSpan.FromSeconds(o);
                     Value = ts.ToString(@"mm\:ss");
                 }
-                else if(t == NetHub.eDataType.DistanceToStartLine)
+
+                InvokeAsync(StateHasChanged);
+            }
+        });
+        hubConnection.On<NetHub.eDataType, double?>("double?", (t, o) =>
+        {
+            if (t == DataType)
+            {
+               if (t == NetHub.eDataType.DistanceToStartLine)
                 {
-                    if (o == 0)
+                    if (o == null)
                     {
                         Value = "-";
                     }
                     else
                     {
-                        Value = Math.Round(o, 0).ToString();
+                        Value = Math.Round((double)o, 0).ToString();
                     }
-                    
                 }
-
+                else if (t == NetHub.eDataType.TimeToBurn)
+                {
+                    if (o == null)
+                    {
+                        Value = "-";
+                        DynamicColor = System.Drawing.Color.White;
+                    }
+                    else
+                    {
+                        Value = Math.Round((double)o, 0).ToString();
+                        if(o > 0)
+                        {
+                            DynamicColor = System.Drawing.Color.Red;
+                        }
+                        else if(o >= -3)
+                        {
+                            DynamicColor = System.Drawing.Color.Green;
+                        }
+                        else
+                        {
+                            DynamicColor = System.Drawing.Color.White;
+                        }
+                    }
+                }
                 InvokeAsync(StateHasChanged);
+                
             }
         });
         await hubConnection.StartAsync();

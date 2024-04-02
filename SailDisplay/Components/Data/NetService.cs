@@ -13,20 +13,22 @@ namespace SailDisplay.Components.Data
 
         private YachtDevice.YachtDevice ds;
 
-        public double TWA { get; private set; } = 0.0;
+        public double TWA { get; private set; } = 45.0;
         public double TWS { get; private set; } = 6.0;
 
-        public double SOG { get; private set; } = 6.0;
-        public double COG { get; private set; } = 34.0;
+        public double SOG { get; private set; } = 15.0;
+        public double COG { get; private set; } = -6.0;
         public double STW { get; private set; } = 6.0;
-        public double Heading { get; private set; } = 34.0;
+        public double Heading { get; private set; } = 6.0;
         public double HeadingToWP { get; private set; } = 34.0;
         public double Heeling { get; private set; } = 0.0;
-        public DateTime StartTimestamp { get; set; } = DateTime.Now.AddMinutes(10);
+        public double? DistanceToLine { get; private set; } = null;
+        public double? TimeToBurn { get; private set; } = null;
+        public DateTime StartTimestamp { get; set; } = DateTime.Now.AddMinutes(1);
 
         public GeoCordinate StartPort { get; set; } = new GeoCordinate(5537.484, 1258.904);
         public GeoCordinate StartStarboard { get; set; } = new GeoCordinate(5537.541, 1259.033);
-        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.600, 1259.000);
+        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.700, 1259.000);
 
         public NetService(IHubContext<NetHub> hub)
         {
@@ -103,13 +105,30 @@ namespace SailDisplay.Components.Data
                     GeoCordinate cross = glStart.CrossingPoint(glActual);
                     if (cross != null)
                     {
-                        double distance = ActualPosition.GetDistanceTo_Meter(cross);
-                        await _hub.Clients.All.SendAsync("double", NetHub.eDataType.DistanceToStartLine, distance);
+                        DistanceToLine = ActualPosition.GetDistanceTo_Meter(cross);
+                        var angel = glStart.Angel;
+                        GeoLine glPortMarkBoat = new GeoLine(StartPort, ActualPosition);
+                        var angelPortMarkBoat = glPortMarkBoat.Angel;
+                        if((360 + angel - angelPortMarkBoat) % 360 < 180)
+                        {
+                            DistanceToLine = -DistanceToLine;
+                        }
                     }
                     else
                     {
-                        await _hub.Clients.All.SendAsync("double", NetHub.eDataType.DistanceToStartLine, 0);
+                        DistanceToLine = null;
                     }
+                    await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.DistanceToStartLine, DistanceToLine);
+
+                    if(DistanceToLine != null && DistanceToLine >= 0)
+                    {
+                        TimeToBurn = ts.TotalSeconds - (Converters.ToNauticMiles((double)DistanceToLine)/SOG)*60*60;
+                    }
+                    else
+                    {
+                        TimeToBurn = null;
+                    }
+                    await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.TimeToBurn, TimeToBurn);
 
                     Thread.Sleep(500);
                 }

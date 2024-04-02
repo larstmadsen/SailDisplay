@@ -73,6 +73,7 @@
             return (6376.5 * 1000) * (2.0 * Math.Atan2(Math.Sqrt(d3), Math.Sqrt(1.0 - d3)));
         }
 
+
         
 
 
