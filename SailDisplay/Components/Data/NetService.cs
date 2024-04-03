@@ -77,7 +77,7 @@ namespace SailDisplay.Components.Data
                     TWS += r.Next(-1, 1) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWS, TWS);
 
-                    TWA += r.Next(-1, 1) * 1;
+                    TWA = (TWA + r.Next(-5, 5) * 0.1 + 360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWA, TWA);
 
                     AWS = TWS * 1.1;
@@ -89,13 +89,13 @@ namespace SailDisplay.Components.Data
                     SOG += r.Next(-5, 5) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.SOG, SOG);
 
-                    COG += r.Next(-5, 5) * 0.1;
+                    COG = (COG + r.Next(-5, 5) * 0.1 +360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.COG, COG);
 
                     STW += r.Next(-5, 5) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.STW, STW);
 
-                    Heading += r.Next(-5, 5) * 0.1;
+                    Heading = (Heading + r.Next(-5, 5) * 1 + 360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heading, Heading);
 
                     Heeling += r.Next(-2, 2) * 0.1;

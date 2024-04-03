@@ -19,5 +19,14 @@
         {
             return nauticMiles * 1852;
         }
+        public static double AngelDiff(double angel1, double angel2)
+        {
+            var diff = angel1 - angel2;
+            if (diff < -180)
+                diff += 360;
+            if (diff > 180)
+                diff -= 360;
+            return diff;
+        }
     }
 }
