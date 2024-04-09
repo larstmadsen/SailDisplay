@@ -23,8 +23,8 @@ namespace SailDisplay.Components.Data
         public double SOG { get; private set; } = 15.0;
         public double COG { get; private set; } = -6.0;
         public double STW { get; private set; } = 6.0;
-        public double Heading { get; private set; } = 6.0;
-        public double HeadingToWP { get; private set; } = 34.0;
+        public double Heading { get; private set; } = 0.0;
+        public double HeadingWayPoint { get; private set; } = 34.0;
         public double Heeling { get; private set; } = 0.0;
         public double? DistanceToLine { get; private set; } = null;
         public double? TimeToBurn { get; private set; } = null;
@@ -33,6 +33,8 @@ namespace SailDisplay.Components.Data
         public GeoCordinate StartPort { get; set; } = new GeoCordinate(5537.484, 1258.904);
         public GeoCordinate StartStarboard { get; set; } = new GeoCordinate(5537.541, 1259.033);
         public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.700, 1259.000);
+        public GeoCordinate ActualWayPoint { get; set; } = new GeoCordinate(5537.450, 1259.010);
+        public GeoCordinate NextWayPoint { get; set; } = new GeoCordinate(5537.450, 1259.100);
 
         public NetService(IHubContext<NetHub> hub)
         {
@@ -77,7 +79,7 @@ namespace SailDisplay.Components.Data
                     TWS += r.Next(-1, 1) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWS, TWS);
 
-                    TWA = (TWA + r.Next(-5, 5) * 0.1 + 360) % 360;
+                    TWA = (TWA + r.Next(-5, 5) * 1 + 360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWA, TWA);
 
                     AWS = TWS * 1.1;
@@ -95,13 +97,15 @@ namespace SailDisplay.Components.Data
                     STW += r.Next(-5, 5) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.STW, STW);
 
-                    Heading = (Heading + r.Next(-5, 5) * 1 + 360) % 360;
+                    Heading = (Heading + r.Next(-5, 5) * 0.1 + 360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heading, Heading);
 
                     Heeling += r.Next(-2, 2) * 0.1;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heeling, Heeling);
 
-                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.HeadingToWP, HeadingToWP);
+                    GeoLine glWayPoint = new GeoLine(ActualPosition, ActualWayPoint);
+                    HeadingWayPoint = glWayPoint.Angel;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.HeadingWayPoint, HeadingWayPoint);
 
                     TimeSpan ts = StartTimestamp - DateTime.Now;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TimeToStart, ts.TotalSeconds);

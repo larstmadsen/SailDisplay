@@ -28,5 +28,12 @@
                 diff -= 360;
             return diff;
         }
+        public static double AngelDiff_0_360(double angel1, double angel2)
+        {
+            var diff = angel1 - angel2;
+            if (diff < 0)
+                diff += 360;
+            return diff;
+        }
     }
 }

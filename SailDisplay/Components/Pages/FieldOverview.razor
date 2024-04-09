@@ -12,35 +12,20 @@
 @if (Position != null && MarkPort != null && MarkStarboard != null)
 {
     <svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">
-            <g transform="translate(@(TransformLongitude_0_1000(MarkPort.Longitude)/2),@(TransformLatitude_0_1000(MarkPort.Latitude)/2)) rotate(@TWA) ">
-                <path id="lineAB" d="M 0 0 l @(500*Math.Sin((45) * Math.PI / 180.0)) @(500*Math.Cos((45) * Math.PI / 180.0))" stroke="green" stroke-width="4" />
-                <path id="lineAB" d="M 0 0 l @(500*Math.Sin((-45) * Math.PI / 180.0)) @(500*Math.Cos((-45) * Math.PI / 180.0))" stroke="red" stroke-width="4" />
-            </g>
-            <g transform="translate(@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2),@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)) rotate(@TWA) ">
-                <path id="lineAB" d="M 0 0 l @(500*Math.Sin((45) * Math.PI / 180.0)) @(500*Math.Cos((45) * Math.PI / 180.0))" stroke="green" stroke-width="4" />
-                <path id="lineAB" d="M 0 0 l @(500*Math.Sin((-45) * Math.PI / 180.0)) @(500*Math.Cos((-45) * Math.PI / 180.0))" stroke="red" stroke-width="4" />
-            </g>
-        
-        
-        
-            <line x1="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" y1="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" x2="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" y2="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke: white;stroke-width:3"></line>
-            <circle r="5" cx="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" style="stroke:red;stroke-width:10" />
-            <circle r="5" cx="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke:green;stroke-width:10" />
 
-            <circle r="5" cx="@(TransformLongitude_0_1000(ActualWaypoint.Longitude)/2)" cy="@(TransformLatitude_0_1000(ActualWaypoint.Latitude)/2)" style="stroke:orange;stroke-width:10" />
+        <circle r="5" cx="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" style="stroke:red;stroke-width:10" />
+        <circle r="5" cx="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke:green;stroke-width:10" />
+        <circle r="5" cx="@(TransformLongitude_0_1000(ActualWaypoint.Longitude)/2)" cy="@(TransformLatitude_0_1000(ActualWaypoint.Latitude)/2)" style="stroke:orange;stroke-width:10" />
+        <circle r="5" cx="@(TransformLongitude_0_1000(NextWaypoint.Longitude)/2)" cy="@(TransformLatitude_0_1000(NextWaypoint.Latitude)/2)" style="stroke:blue;stroke-width:10" />
 
-            @if (StartLineCrossingPoint != null)
-            {
-                <line x1="@(TransformLongitude_0_1000(Position.Longitude)/2)" y1="@(TransformLatitude_0_1000(Position.Latitude)/2)" x2="@(TransformLongitude_0_1000(StartLineCrossingPoint.Longitude)/2)" y2="@(TransformLatitude_0_1000(StartLineCrossingPoint.Latitude)/2)" style="stroke: white;stroke-width:3"></line>
-            }
-            <g transform="translate(@(TransformLongitude_0_1000(Position.Longitude)/2),@(TransformLatitude_0_1000(Position.Latitude)/2)) rotate(@Heading) ">
-                <path id="lineAB" d="M -15 60 q -3 -40 15 -70" stroke="blue" fill="none" stroke-width="4" />
-                <path id="lineCB" d="M 15 60 q 3 -40 -15 -70" stroke="blue" fill="none" stroke-width="4" />
-                <path id="lineAB" d="M -15 60 l 30 0" stroke="blue" stroke-width="4" />
-            </g>
+        <g transform="translate(@(TransformLongitude_0_1000(Position.Longitude)/2),@(TransformLatitude_0_1000(Position.Latitude)/2)) rotate(@Heading) ">
+            <path id="lineAB" d="M -15 60 q -3 -40 15 -70" stroke="blue" fill="none" stroke-width="4" />
+            <path id="lineCB" d="M 15 60 q 3 -40 -15 -70" stroke="blue" fill="none" stroke-width="4" />
+            <path id="lineAB" d="M -15 60 l 30 0" stroke="blue" stroke-width="4" />
+        </g>
     </svg>
 
-    
+
 }
 
 @code {
@@ -50,27 +35,36 @@
     private GeoCordinate MarkStarboard { get; set; }
     private GeoCordinate StartLineCrossingPoint { get; set; } //Cordinate where the boat is crossing startline
     private GeoCordinate ActualWaypoint { get; set; }
+    private GeoCordinate NextWaypoint { get; set; }
     private double Heading { get; set; }
     private double COG { get; set; }
     private double TWA { get; set; }
-    private double LaylineAngelStarboard
-    {
-        get
-        {
-            return TWA - 45 % 360;
-        }
-    }
+
 
     private double TransformLongitude_0_1000(double x)
     {
         var minLongitude = Math.Min(Math.Min(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
         var maxLongitude = Math.Max(Math.Max(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
-        var diffLongitude = maxLongitude - minLongitude;
         var minLatitude = Math.Min(Math.Min(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
         var maxLatitude = Math.Max(Math.Max(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
+        if (ActualWaypoint != null)
+        {
+            minLongitude = Math.Min(minLongitude, ActualWaypoint.Longitude);
+            maxLongitude = Math.Max(maxLongitude, ActualWaypoint.Longitude);
+            minLatitude = Math.Min(minLatitude, ActualWaypoint.Latitude);
+            maxLatitude = Math.Max(maxLatitude, ActualWaypoint.Latitude);
+        }
+        if (NextWaypoint != null)
+        {
+            minLongitude = Math.Min(minLongitude, NextWaypoint.Longitude);
+            maxLongitude = Math.Max(maxLongitude, NextWaypoint.Longitude);
+            minLatitude = Math.Min(minLatitude, NextWaypoint.Latitude);
+            maxLatitude = Math.Max(maxLatitude, NextWaypoint.Latitude);
+        }
+        var diffLongitude = maxLongitude - minLongitude;
         var diffLatitude = maxLatitude - minLatitude;
 
-        if(diffLongitude > diffLatitude)
+        if (diffLongitude > diffLatitude)
         {
             var offset = minLongitude - diffLongitude * 0.05;
             var scale = 1000 / (diffLongitude * 1.1);
@@ -82,7 +76,7 @@
             var scale = 1000 / (diffLatitude * 1.1);
 
 
-            var offset = minLongitude+diffLongitude/2 -500/scale;
+            var offset = minLongitude + diffLongitude / 2 - 500 / scale;
 
 
             var res = (x - offset) * scale;
@@ -93,9 +87,23 @@
     {
         var minLongitude = Math.Min(Math.Min(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
         var maxLongitude = Math.Max(Math.Max(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
-        var diffLongitude = maxLongitude - minLongitude;
         var minLatitude = Math.Min(Math.Min(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
         var maxLatitude = Math.Max(Math.Max(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
+        if (ActualWaypoint != null)
+        {
+            minLongitude = Math.Min(minLongitude, ActualWaypoint.Longitude);
+            maxLongitude = Math.Max(maxLongitude, ActualWaypoint.Longitude);
+            minLatitude = Math.Min(minLatitude, ActualWaypoint.Latitude);
+            maxLatitude = Math.Max(maxLatitude, ActualWaypoint.Latitude);
+        }
+        if (NextWaypoint != null)
+        {
+            minLongitude = Math.Min(minLongitude, NextWaypoint.Longitude);
+            maxLongitude = Math.Max(maxLongitude, NextWaypoint.Longitude);
+            minLatitude = Math.Min(minLatitude, NextWaypoint.Latitude);
+            maxLatitude = Math.Max(maxLatitude, NextWaypoint.Latitude);
+        }
+        var diffLongitude = maxLongitude - minLongitude;
         var diffLatitude = maxLatitude - minLatitude;
 
         if (diffLongitude < diffLatitude)
@@ -125,6 +133,7 @@
         MarkStarboard = netService.StartStarboard;
         MarkPort = netService.StartPort;
         ActualWaypoint = netService.ActualWayPoint;
+        NextWaypoint = netService.NextWayPoint;
         hubConnection = new HubConnectionBuilder()
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
@@ -176,10 +185,10 @@
                     GeoLine sailDirection = new GeoLine(Position, COG);
                     StartLineCrossingPoint = startLine.CrossingPoint(sailDirection);
                 }
-                
+
                 InvokeAsync(StateHasChanged);
             }
-            
+
 
         });
 

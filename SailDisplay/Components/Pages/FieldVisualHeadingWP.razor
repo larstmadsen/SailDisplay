@@ -63,13 +63,13 @@
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
 
-        HeadingToWP = netService.HeadingToWP;
+        HeadingToWP = netService.HeadingWayPoint;
         Heading = netService.Heading;
         Heeling = netService.Heeling;
 
         hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
         {
-            if (t == NetHub.eDataType.HeadingToWP)
+            if (t == NetHub.eDataType.HeadingWayPoint)
             {
                 HeadingToWP = o;
                 InvokeAsync(StateHasChanged);

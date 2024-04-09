@@ -51,9 +51,9 @@
             get
             {
                 if(G1.Longitude == G2.Longitude)
-                    return 90;
+                    return 0;
 
-                return Math.Atan((G1.Latitude - G2.Latitude) / (G1.Longitude - G2.Longitude)) * 180.0 / Math.PI;
+                return (Math.Atan((G1.Latitude - G2.Latitude) / (G1.Longitude - G2.Longitude)) * 180.0 / Math.PI + 90) % 360;
             }
         }
     }

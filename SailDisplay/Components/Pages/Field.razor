@@ -46,7 +46,7 @@
             {
                 case NetHub.eDataType.COG:
                 case NetHub.eDataType.Heading:
-                case NetHub.eDataType.HeadingToWP:
+                case NetHub.eDataType.HeadingWayPoint:
                 case NetHub.eDataType.Heeling:
                     return "T";
                 case NetHub.eDataType.STW:
@@ -112,7 +112,7 @@
                     var temp = o;
                     Value = Math.Round((double)o, 2).ToString("#0.00");
                 }
-                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingToWP || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
+                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingWayPoint || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
                 {
                     Value = Math.Round(o, 0).ToString("000") + "°";
                 }
