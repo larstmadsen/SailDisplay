@@ -69,7 +69,7 @@
 
         hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
         {
-            if (t == NetHub.eDataType.HeadingWayPoint)
+            if (t == NetHub.eDataType.HeadingToWP)
             {
                 HeadingToWP = o;
                 InvokeAsync(StateHasChanged);
