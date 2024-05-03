@@ -1,5 +1,12 @@
 ﻿@page "/Display1"
-<Cruising></Cruising>
+@using SailDisplay.Components.Hubs
+
+<div style="height: 24vh">
+    <Field DataType=NetHub.eDataType.TWS></Field>
+</div>
+<div style="height: 24vh">
+    <Field DataType=NetHub.eDataType.TWA></Field>
+</div>
 
 @code {
 

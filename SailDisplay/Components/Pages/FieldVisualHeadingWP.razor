@@ -64,7 +64,7 @@
             .Build();
 
         HeadingToWP = netService.HeadingToWP;
-        Heading = netService.Heading;
+        Heading = netService.CTW;
         Heeling = netService.Heeling;
 
         hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
