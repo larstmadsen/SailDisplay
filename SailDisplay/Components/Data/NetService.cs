@@ -7,6 +7,7 @@ namespace SailDisplay.Components.Data
 {
     public class NetService
     {
+        private bool Simulate = true;
         private static Thread workerThread;
         private static bool workerThreadActive = true;
         private readonly IHubContext<NetHub> _hub;
@@ -39,41 +40,22 @@ namespace SailDisplay.Components.Data
         public NetService(IHubContext<NetHub> hub)
         {
             _hub = hub;
-            if (true) //False = Simulate
+            if (!Simulate) //False = Simulate
             {
                 ds = new YachtDevice.YachtDevice();
                 ds.Connect("192.168.4.1", 1456);
             }
 
             Task workerThread = Task.Run(async () => await Worker());
-            /*if (workerThread == null)
-            {
-                workerThread = new Thread(WorkerThread);
-                workerThread.Start();
-                Console.WriteLine("NetService WorkerThread start");
-            }*/
 
 
         }
 
-        /*public async Task WorkerThread()
-        {
-            new Thread(() =>
-            {
-                Thread.CurrentThread.IsBackground = true;
-                Console.WriteLine("NetService Thread Subscripe");
-            }).Start();
-
-            while (workerThreadActive)
-            {
-                Worker();
-            }
-        }*/
         public async Task Worker()
         {
             while (workerThreadActive)
             {
-                if (false)//Simulate
+                if (Simulate)//Simulate
                 {
                     Random r = new Random();
 
