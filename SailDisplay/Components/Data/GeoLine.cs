@@ -43,7 +43,18 @@
 
             var x = (gl.b - b) / (a - gl.a);
             var y = a * x + b;
+
             return new GeoCordinate((double)y, (double)x);
+        }
+        public double Angel
+        {
+            get
+            {
+                if(G1.Longitude == G2.Longitude)
+                    return 0;
+
+                return (Math.Atan((G1.Latitude - G2.Latitude) / (G1.Longitude - G2.Longitude)) * 180.0 / Math.PI + 90) % 360;
+            }
         }
     }
 }

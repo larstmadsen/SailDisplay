@@ -46,7 +46,7 @@
             {
                 case NetHub.eDataType.COG:
                 case NetHub.eDataType.Heading:
-                case NetHub.eDataType.HeadingToWP:
+                case NetHub.eDataType.HeadingWayPoint:
                 case NetHub.eDataType.Heeling:
                 case NetHub.eDataType.AWA:
                 case NetHub.eDataType.TWA:
@@ -56,6 +56,8 @@
                     return "kts";
                 case NetHub.eDataType.DistanceToStartLine:
                     return "m";
+                case NetHub.eDataType.TimeToBurn:
+                    return "s";
                 case NetHub.eDataType.AWS:
                 case NetHub.eDataType.TWS:
                     return "ms";
@@ -83,6 +85,9 @@
                 case NetHub.eDataType.STW:
                     c = System.Drawing.Color.Blue;
                     break;
+                case NetHub.eDataType.TimeToBurn:
+                    c = DynamicColor;
+                    break;
                 default:
                     c = System.Drawing.Color.White;
                     break;
@@ -90,7 +95,8 @@
             return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
         }
     }
-
+    private Color DynamicColor { get; set; }
+    
     public string Value { get; private set; }
 
 
@@ -111,6 +117,7 @@
                     var temp = o;
                     Value = Math.Round((double)o, 2).ToString("#0.00");
                 }
+                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingWayPoint || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
                 else if (t == NetHub.eDataType.TWS || t == NetHub.eDataType.TWA)
                 {
                     var temp = o;
@@ -126,20 +133,52 @@
                     TimeSpan ts = TimeSpan.FromSeconds(o);
                     Value = ts.ToString(@"mm\:ss");
                 }
-                else if(t == NetHub.eDataType.DistanceToStartLine)
+
+                InvokeAsync(StateHasChanged);
+            }
+        });
+        hubConnection.On<NetHub.eDataType, double?>("double?", (t, o) =>
+        {
+            if (t == DataType)
+            {
+               if (t == NetHub.eDataType.DistanceToStartLine)
                 {
-                    if (o == 0)
+                    if (o == null)
                     {
                         Value = "-";
                     }
                     else
                     {
-                        Value = Math.Round(o, 0).ToString();
+                        Value = Math.Round((double)o, 0).ToString();
+                    }
+                }
+                else if (t == NetHub.eDataType.TimeToBurn)
+                {
+                    if (o == null)
+                    {
+                        Value = "-";
+                        DynamicColor = System.Drawing.Color.White;
+                    }
+                    else
+                    {
+                        Value = Math.Round((double)o, 0).ToString();
+                        if(o > 0)
+                        {
+                            DynamicColor = System.Drawing.Color.Red;
+                        }
+                        else if(o >= -3)
+                        {
+                            DynamicColor = System.Drawing.Color.Green;
+                        }
+                        else
+                        {
+                            DynamicColor = System.Drawing.Color.White;
+                        }
                     }
                   
                 }
-
                 InvokeAsync(StateHasChanged);
+                
             }
         });
         await hubConnection.StartAsync();

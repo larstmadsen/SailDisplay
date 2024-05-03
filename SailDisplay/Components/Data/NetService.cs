@@ -15,16 +15,22 @@ namespace SailDisplay.Components.Data
 
         private YachtDevice.YachtDevice ds;
 
-        public double TWA { get; private set; } = 0.0;
+        public double TWA { get; private set; } = 45.0;
+
         public double TWS { get; private set; } = 6.0;
         public double AWA { get; private set; } = 0.0;
         public double AWS { get; private set; } = 6.0;
 
-        public double SOG { get; private set; } = 6.0;
-        public double COG { get; private set; } = 34.0;
+        public double AWA { get; private set; } = 0;
+        public double AWS { get; private set; } = 0;
+
+        public double SOG { get; private set; } = 15.0;
+        public double COG { get; private set; } = -6.0;
         public double STW { get; private set; } = 6.0;
         public double CTW { get; private set; } = 34.0;
         public double HeadingToWP { get; private set; } = 34.0;
+        public double Heading { get; private set; } = 0.0;
+        public double HeadingWayPoint { get; private set; } = 34.0;
         public double Heeling { get; private set; } = 0.0;
         public double DBS { get; private set; } = 2;
 
@@ -32,10 +38,15 @@ namespace SailDisplay.Components.Data
 
 
         public DateTime StartTimestamp { get; set; } = DateTime.Now.AddMinutes(10);
+        public double? DistanceToLine { get; private set; } = null;
+        public double? TimeToBurn { get; private set; } = null;
+        public DateTime StartTimestamp { get; set; } = DateTime.Now.AddMinutes(1);
 
         public GeoCordinate StartPort { get; set; } = new GeoCordinate(5537.484, 1258.904);
         public GeoCordinate StartStarboard { get; set; } = new GeoCordinate(5537.541, 1259.033);
-        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.600, 1259.000);
+        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.700, 1259.000);
+        public GeoCordinate ActualWayPoint { get; set; } = new GeoCordinate(5537.450, 1259.010);
+        public GeoCordinate NextWayPoint { get; set; } = new GeoCordinate(5537.450, 1259.100);
 
         public NetService(IHubContext<NetHub> hub)
         {
@@ -62,13 +73,19 @@ namespace SailDisplay.Components.Data
                     TWS += r.Next(-1, 1) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWS, TWS);
 
-                    TWA += r.Next(-1, 1) * 0.01;
+                    TWA = (TWA + r.Next(-5, 5) * 1 + 360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TWA, TWA);
+
+                    AWS = TWS * 1.1;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.AWS, AWS);
+
+                    AWA = TWA * 0.8;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.AWA, AWA);
 
                     SOG += r.Next(-5, 5) * 0.01;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.SOG, SOG);
 
-                    COG += r.Next(-5, 5) * 0.1;
+                    COG = (COG + r.Next(-5, 5) * 0.1 +360) % 360;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.COG, COG);
 
                     STW += r.Next(-5, 5) * 0.01;
@@ -76,11 +93,15 @@ namespace SailDisplay.Components.Data
 
                     CTW += r.Next(-5, 5) * 0.1;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.CTW, CTW);
+                    Heading = (Heading + r.Next(-5, 5) * 0.1 + 360) % 360;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heading, Heading);
 
                     Heeling += r.Next(-2, 2) * 0.1;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heeling, Heeling);
 
-                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.HeadingToWP, HeadingToWP);
+                    GeoLine glWayPoint = new GeoLine(ActualPosition, ActualWayPoint);
+                    HeadingWayPoint = glWayPoint.Angel;
+                    await _hub.Clients.All.SendAsync("double", NetHub.eDataType.HeadingWayPoint, HeadingWayPoint);
 
                     TimeSpan ts = StartTimestamp - DateTime.Now;
                     await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TimeToStart, ts.TotalSeconds);
@@ -94,13 +115,30 @@ namespace SailDisplay.Components.Data
                     GeoCordinate cross = glStart.CrossingPoint(glActual);
                     if (cross != null)
                     {
-                        double distance = ActualPosition.GetDistanceTo_Meter(cross);
-                        await _hub.Clients.All.SendAsync("double", NetHub.eDataType.DistanceToStartLine, distance);
+                        DistanceToLine = ActualPosition.GetDistanceTo_Meter(cross);
+                        var angel = glStart.Angel;
+                        GeoLine glPortMarkBoat = new GeoLine(StartPort, ActualPosition);
+                        var angelPortMarkBoat = glPortMarkBoat.Angel;
+                        if((360 + angel - angelPortMarkBoat) % 360 < 180)
+                        {
+                            DistanceToLine = -DistanceToLine;
+                        }
                     }
                     else
                     {
-                        await _hub.Clients.All.SendAsync("double", NetHub.eDataType.DistanceToStartLine, 0);
+                        DistanceToLine = null;
                     }
+                    await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.DistanceToStartLine, DistanceToLine);
+
+                    if(DistanceToLine != null && DistanceToLine >= 0)
+                    {
+                        TimeToBurn = ts.TotalSeconds - (Converters.ToNauticMiles((double)DistanceToLine)/SOG)*60*60;
+                    }
+                    else
+                    {
+                        TimeToBurn = null;
+                    }
+                    await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.TimeToBurn, TimeToBurn);
 
                     Thread.Sleep(500);
                 }

@@ -1,14 +1,11 @@
 ﻿@page "/Display2"
 @using SailDisplay.Components.Hubs
 
-<div style="height: 24vh">
-    <Field DataType=NetHub.eDataType.COG></Field>
-</div>
-<div style="height: 24vh">
-    <Field DataType=NetHub.eDataType.DistanceToStartLine></Field>
+<div style="height: 49vh">
+    <FieldOverview></FieldOverview>
 </div>
 <div style="height: 49vh">
-    <FieldVisualStart></FieldVisualStart>
+    <UpWind></UpWind>
 </div>
 
 @code {
