@@ -2,7 +2,7 @@
 
 namespace SeaTalkParser
 {
-    public class DBS : Message
+    public class DBS : MessageSeaTalk
     {
         public DBS(string message)
         {

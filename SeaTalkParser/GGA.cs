@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SeaTalkParser
 {
-    public class GGA : Message
+    public class GGA : MessageSeaTalk
     {
         public GGA(string message)
         {

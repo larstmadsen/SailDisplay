@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SeaTalkParser
 {
-    public class VWT : Message
+    public class VWT : MessageSeaTalk
     {
         public VWT(string message)
         {

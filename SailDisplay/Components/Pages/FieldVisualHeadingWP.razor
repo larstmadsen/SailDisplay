@@ -21,13 +21,13 @@
 @code {
     private HubConnection? hubConnection;
 
-    private double HeadingToWP { get; set; }
+    private double WaypointBearing { get; set; }
     private double Heading { get; set; }
     private double HeadingDiff 
     {
         get
         {
-            var temp = HeadingToWP - Heading;
+            var temp = WaypointBearing - Heading;
             if(temp < 0) return temp + 360;
             if(temp > 360) return temp - 360;
             return temp;
@@ -63,15 +63,15 @@
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
 
-        HeadingToWP = netService.HeadingToWP;
+        WaypointBearing = netService.WaypointBearing;
         Heading = netService.CTW;
         Heeling = netService.Heeling;
 
         hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
         {
-            if (t == NetHub.eDataType.HeadingToWP)
+            if (t == NetHub.eDataType.WaypointBearing)
             {
-                HeadingToWP = o;
+                WaypointBearing = o;
                 InvokeAsync(StateHasChanged);
             }
             else if (t == NetHub.eDataType.Heading)

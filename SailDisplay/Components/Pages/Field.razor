@@ -46,7 +46,7 @@
             {
                 case NetHub.eDataType.COG:
                 case NetHub.eDataType.Heading:
-                case NetHub.eDataType.HeadingToWP:
+                case NetHub.eDataType.WaypointBearing:
                 case NetHub.eDataType.Heeling:
                 case NetHub.eDataType.AWA:
                 case NetHub.eDataType.TWA:
@@ -117,7 +117,7 @@
                     var temp = o;
                     Value = Math.Round((double)o, 2).ToString("#0.00");
                 }
-                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingToWP || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
+                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.WaypointBearing || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
                 {
                     Value = Math.Round(o, 0).ToString("000") + "°";
                 }
@@ -125,11 +125,6 @@
                 {
                     var temp = o;
                     Value = Math.Round((double)o, 1).ToString("#0.0");
-                }
-
-                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingToWP || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
-                {
-                    Value = Math.Round(o, 0).ToString("000") + "°";
                 }
                 else if (t == NetHub.eDataType.TimeToStart)
                 {
