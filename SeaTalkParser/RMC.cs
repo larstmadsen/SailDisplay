@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SeaTalkParser
 {
-    public class RMC : Message
+    public class RMC : MessageSeaTalk
     {
         public RMC(string message)
         {

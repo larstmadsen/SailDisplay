@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SeaTalkParser
 {
-    public class RSA : Message
+    public class RSA : MessageSeaTalk
     {
         public RSA(string message)
         {

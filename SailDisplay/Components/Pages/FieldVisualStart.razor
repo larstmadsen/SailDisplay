@@ -9,8 +9,47 @@
 @inject NavigationManager navigationManager
 @inject IConfiguration configuration
 
+
 @if (Position != null && MarkPort != null && MarkStarboard != null)
 {
+    <table style="color: white; width: 100%; height: 100%; font-weight: bold">
+        <tr>
+            <td>Name</td>
+            <td>Longitude</td>
+            <td>Latitude</td>
+            <td>x</td>
+            <td>y</td>
+        </tr>
+        <tr>
+            <td>Position</td>
+            <td>@Position.Longitude</td>
+            <td>@Position.Latitude</td>
+            <td>@TransformLongitude_0_1000(Position.Longitude)</td>
+            <td>@TransformLatitude_0_1000(Position.Latitude)</td>
+        </tr>
+        <tr>
+            <td>Waypoint</td>
+            <td>@WaypointPosition.Longitude</td>
+            <td>@WaypointPosition.Latitude</td>
+            <td>@TransformLongitude_0_1000(WaypointPosition.Longitude)</td>
+            <td>@TransformLatitude_0_1000(WaypointPosition.Latitude)</td>
+        </tr>
+        <tr>
+            <td>MarkPort</td>
+            <td>@MarkPort.Longitude</td>
+            <td>@MarkPort.Latitude</td>
+            <td>@TransformLongitude_0_1000(MarkPort.Longitude)</td>
+            <td>@TransformLatitude_0_1000(MarkPort.Latitude)</td>
+        </tr>
+        <tr>
+            <td>MarkStarboard</td>
+            <td>@MarkStarboard.Longitude</td>
+            <td>@MarkStarboard.Latitude</td>
+            <td>@TransformLongitude_0_1000(MarkStarboard.Longitude)</td>
+            <td>@TransformLatitude_0_1000(MarkStarboard.Latitude)</td>
+        </tr>
+
+    </table>
     <svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">
             <g transform="translate(@(TransformLongitude_0_1000(MarkPort.Longitude)/2),@(TransformLatitude_0_1000(MarkPort.Latitude)/2)) rotate(@TWA) ">
                 <path id="lineAB" d="M 0 0 l @(500*Math.Sin((45) * Math.PI / 180.0)) @(500*Math.Cos((45) * Math.PI / 180.0))" stroke="green" stroke-width="4" />
@@ -27,7 +66,7 @@
             <circle r="5" cx="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" style="stroke:red;stroke-width:10" />
             <circle r="5" cx="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke:green;stroke-width:10" />
 
-            <circle r="5" cx="@(TransformLongitude_0_1000(ActualWaypoint.Longitude)/2)" cy="@(TransformLatitude_0_1000(ActualWaypoint.Latitude)/2)" style="stroke:orange;stroke-width:10" />
+            <circle r="5" cx="@(TransformLongitude_0_1000(WaypointPosition.Longitude)/2)" cy="@(TransformLatitude_0_1000(WaypointPosition.Latitude)/2)" style="stroke:orange;stroke-width:10" />
 
             @if (StartLineCrossingPoint != null)
             {
@@ -49,7 +88,7 @@
     private GeoCordinate MarkPort { get; set; }
     private GeoCordinate MarkStarboard { get; set; }
     private GeoCordinate StartLineCrossingPoint { get; set; } //Cordinate where the boat is crossing startline
-    private GeoCordinate ActualWaypoint { get; set; }
+    private GeoCordinate WaypointPosition { get; set; }
     private double Heading { get; set; }
     private double COG { get; set; }
     private double TWA { get; set; }
@@ -103,7 +142,7 @@
             var offset = minLatitude - diffLatitude * 0.05;
             var scale = 1000 / (diffLatitude * 1.1);
             var res = (y - offset) * scale;
-            return res;
+            return 1000 - res;
         }
         else
         {
@@ -114,7 +153,7 @@
 
 
             var res = (y - offset) * scale;
-            return res;
+            return 1000 - res;
         }
     }
 
@@ -124,7 +163,7 @@
     {
         MarkStarboard = netService.StartStarboard;
         MarkPort = netService.StartPort;
-        ActualWaypoint = netService.ActualWayPoint;
+        WaypointPosition = netService.WaypointPosition;
         hubConnection = new HubConnectionBuilder()
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
@@ -146,9 +185,9 @@
                 MarkStarboard = o;
                 InvokeAsync(StateHasChanged);
             }
-            else if (t == NetHub.eDataType.StartMarkStarboard)
+            else if (t == NetHub.eDataType.WaypointPosition)
             {
-                MarkStarboard = o;
+                WaypointPosition = o;
                 InvokeAsync(StateHasChanged);
             }
 

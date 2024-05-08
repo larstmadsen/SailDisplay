@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SeaTalkNGParser\SeaTalkNGParser.csproj" />
     <ProjectReference Include="..\SeaTalkParser\SeaTalkParser.csproj" />
     <ProjectReference Include="..\YachtDevice\YachtDevice.csproj" />
   </ItemGroup>

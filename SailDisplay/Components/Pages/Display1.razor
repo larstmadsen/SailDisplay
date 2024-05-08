@@ -1,6 +1,16 @@
-﻿@page "/Display1"
+﻿@page "/"
+@page "/Display1"
+@using SailDisplay.Components.Hubs
 
-<Cruising></Cruising>
+<div style="height: 24vh">
+    <Field DataType=NetHub.eDataType.TimeToStart></Field>
+</div>
+<div style="height: 24vh">
+    <Field DataType=NetHub.eDataType.TimeToBurn></Field>
+</div>
+<div style="height: 49vh">
+    <FieldVisualStart></FieldVisualStart>
+</div>
 
 @code {
 

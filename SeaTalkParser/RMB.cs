@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SeaTalkParser
 {
-    public class RMB : Message
+    public class RMB : MessageSeaTalk
     {
         public RMB(string message)
         {
@@ -14,12 +14,12 @@ namespace SeaTalkParser
             Latitude = Parse(msg[6]);
             Longitude = Parse(msg[8]);
             Distance = Parse(msg[10]);
-            Heading = Parse(msg[11]);
+            Bearing = Parse(msg[11]);
         }
         public double Longitude { get; private set; }
         public double Latitude { get; private set; }
         public double Distance { get; private set; }
-        public double Heading { get; private set; }
+        public double Bearing { get; private set; }
 
 
 

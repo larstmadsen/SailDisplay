@@ -3,7 +3,7 @@
 namespace SeaTalkParser
 {
     public enum MessageType { VWT, VWR, DBS, RSA, VHW, VTG, GGA, RMB, RMC }
-    public class Message
+    public class MessageSeaTalk
     {
         public MessageType Type { get; protected set; }
 

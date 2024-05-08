@@ -1,1 +1,1 @@
-scp -r c:\Users\lmadsen\source\repos\SailDisplay\SailDisplay\bin\Release\net8.0\publish\ admin@192.168.86.23:/home/admin/ww
+scp -r c:\Users\lmadsen\source\repos\larstmadsen\SailDisplay\SailDisplay\bin\Release\net8.0\publish\ admin@192.168.86.23:/home/admin/ww

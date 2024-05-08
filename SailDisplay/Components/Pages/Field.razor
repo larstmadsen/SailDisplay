@@ -46,8 +46,10 @@
             {
                 case NetHub.eDataType.COG:
                 case NetHub.eDataType.Heading:
-                case NetHub.eDataType.HeadingWayPoint:
+                case NetHub.eDataType.WaypointBearing:
                 case NetHub.eDataType.Heeling:
+                case NetHub.eDataType.AWA:
+                case NetHub.eDataType.TWA:
                     return "T";
                 case NetHub.eDataType.STW:
                 case NetHub.eDataType.SOG:
@@ -56,6 +58,9 @@
                     return "m";
                 case NetHub.eDataType.TimeToBurn:
                     return "s";
+                case NetHub.eDataType.AWS:
+                case NetHub.eDataType.TWS:
+                    return "ms";
                 default:
                     return "";
             }
@@ -112,9 +117,14 @@
                     var temp = o;
                     Value = Math.Round((double)o, 2).ToString("#0.00");
                 }
-                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingWayPoint || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
+                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.WaypointBearing || t == NetHub.eDataType.Heeling || t == NetHub.eDataType.TWA || t == NetHub.eDataType.AWA)
                 {
                     Value = Math.Round(o, 0).ToString("000") + "°";
+                }
+                else if (t == NetHub.eDataType.TWS || t == NetHub.eDataType.TWA)
+                {
+                    var temp = o;
+                    Value = Math.Round((double)o, 1).ToString("#0.0");
                 }
                 else if (t == NetHub.eDataType.TimeToStart)
                 {
@@ -163,6 +173,7 @@
                             DynamicColor = System.Drawing.Color.White;
                         }
                     }
+                  
                 }
                 InvokeAsync(StateHasChanged);
                 

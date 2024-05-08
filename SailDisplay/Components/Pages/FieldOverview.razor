@@ -15,8 +15,7 @@
 
         <circle r="5" cx="@(TransformLongitude_0_1000(MarkPort.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkPort.Latitude)/2)" style="stroke:red;stroke-width:10" />
         <circle r="5" cx="@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2)" cy="@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)" style="stroke:green;stroke-width:10" />
-        <circle r="5" cx="@(TransformLongitude_0_1000(ActualWaypoint.Longitude)/2)" cy="@(TransformLatitude_0_1000(ActualWaypoint.Latitude)/2)" style="stroke:orange;stroke-width:10" />
-        <circle r="5" cx="@(TransformLongitude_0_1000(NextWaypoint.Longitude)/2)" cy="@(TransformLatitude_0_1000(NextWaypoint.Latitude)/2)" style="stroke:blue;stroke-width:10" />
+        <circle r="5" cx="@(TransformLongitude_0_1000(WaypointPosition.Longitude)/2)" cy="@(TransformLatitude_0_1000(WaypointPosition.Latitude)/2)" style="stroke:orange;stroke-width:10" />
 
         <g transform="translate(@(TransformLongitude_0_1000(Position.Longitude)/2),@(TransformLatitude_0_1000(Position.Latitude)/2)) rotate(@Heading) ">
             <path id="lineAB" d="M -15 60 q -3 -40 15 -70" stroke="blue" fill="none" stroke-width="4" />
@@ -34,8 +33,7 @@
     private GeoCordinate MarkPort { get; set; }
     private GeoCordinate MarkStarboard { get; set; }
     private GeoCordinate StartLineCrossingPoint { get; set; } //Cordinate where the boat is crossing startline
-    private GeoCordinate ActualWaypoint { get; set; }
-    private GeoCordinate NextWaypoint { get; set; }
+    private GeoCordinate WaypointPosition { get; set; }
     private double Heading { get; set; }
     private double COG { get; set; }
     private double TWA { get; set; }
@@ -47,19 +45,12 @@
         var maxLongitude = Math.Max(Math.Max(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
         var minLatitude = Math.Min(Math.Min(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
         var maxLatitude = Math.Max(Math.Max(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
-        if (ActualWaypoint != null)
+        if (WaypointPosition != null)
         {
-            minLongitude = Math.Min(minLongitude, ActualWaypoint.Longitude);
-            maxLongitude = Math.Max(maxLongitude, ActualWaypoint.Longitude);
-            minLatitude = Math.Min(minLatitude, ActualWaypoint.Latitude);
-            maxLatitude = Math.Max(maxLatitude, ActualWaypoint.Latitude);
-        }
-        if (NextWaypoint != null)
-        {
-            minLongitude = Math.Min(minLongitude, NextWaypoint.Longitude);
-            maxLongitude = Math.Max(maxLongitude, NextWaypoint.Longitude);
-            minLatitude = Math.Min(minLatitude, NextWaypoint.Latitude);
-            maxLatitude = Math.Max(maxLatitude, NextWaypoint.Latitude);
+            minLongitude = Math.Min(minLongitude, WaypointPosition.Longitude);
+            maxLongitude = Math.Max(maxLongitude, WaypointPosition.Longitude);
+            minLatitude = Math.Min(minLatitude, WaypointPosition.Latitude);
+            maxLatitude = Math.Max(maxLatitude, WaypointPosition.Latitude);
         }
         var diffLongitude = maxLongitude - minLongitude;
         var diffLatitude = maxLatitude - minLatitude;
@@ -89,19 +80,12 @@
         var maxLongitude = Math.Max(Math.Max(Position.Longitude, MarkPort.Longitude), MarkStarboard.Longitude);
         var minLatitude = Math.Min(Math.Min(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
         var maxLatitude = Math.Max(Math.Max(Position.Latitude, MarkPort.Latitude), MarkStarboard.Latitude);
-        if (ActualWaypoint != null)
+        if (WaypointPosition != null)
         {
-            minLongitude = Math.Min(minLongitude, ActualWaypoint.Longitude);
-            maxLongitude = Math.Max(maxLongitude, ActualWaypoint.Longitude);
-            minLatitude = Math.Min(minLatitude, ActualWaypoint.Latitude);
-            maxLatitude = Math.Max(maxLatitude, ActualWaypoint.Latitude);
-        }
-        if (NextWaypoint != null)
-        {
-            minLongitude = Math.Min(minLongitude, NextWaypoint.Longitude);
-            maxLongitude = Math.Max(maxLongitude, NextWaypoint.Longitude);
-            minLatitude = Math.Min(minLatitude, NextWaypoint.Latitude);
-            maxLatitude = Math.Max(maxLatitude, NextWaypoint.Latitude);
+            minLongitude = Math.Min(minLongitude, WaypointPosition.Longitude);
+            maxLongitude = Math.Max(maxLongitude, WaypointPosition.Longitude);
+            minLatitude = Math.Min(minLatitude, WaypointPosition.Latitude);
+            maxLatitude = Math.Max(maxLatitude, WaypointPosition.Latitude);
         }
         var diffLongitude = maxLongitude - minLongitude;
         var diffLatitude = maxLatitude - minLatitude;
@@ -132,8 +116,8 @@
     {
         MarkStarboard = netService.StartStarboard;
         MarkPort = netService.StartPort;
-        ActualWaypoint = netService.ActualWayPoint;
-        NextWaypoint = netService.NextWayPoint;
+        WaypointPosition = netService.WaypointPosition;
+        //NextWaypoint = netService.NextWayPoint;
         hubConnection = new HubConnectionBuilder()
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
