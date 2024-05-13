@@ -6,7 +6,8 @@ using System.Reflection.PortableExecutable;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://*:5000;https://*:5001");
+//builder.WebHost.UseUrls("http://*:5000;https://*:5001");
+builder.WebHost.UseUrls("http://*:5000");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
