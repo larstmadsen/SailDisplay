@@ -26,7 +26,7 @@
         </tr>
         <tr>
             <td>Start time</td>
-            <td><input type="time" @bind="StartTimestamp"/></td>
+            <td><input type="number" @bind="StartTimestampHour" />:<input type="number" @bind="StartTimestampMinute" />:<input type="number" @bind="StartTimestampSecond" /></td>
             <td><button @onclick="@(async () => { await SetStarttime(); })">Set</button></td>
         </tr>
     </tbody>
@@ -35,6 +35,9 @@
 @code {
     private HubConnection? hubConnection;
     private DateTime StartTimestamp { get; set; }
+    private int StartTimestampHour { get; set; }
+    private int StartTimestampMinute { get; set; }
+    private int StartTimestampSecond { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,35 +49,10 @@
         {
             StartTimestamp = DateTime.Now.AddMinutes(30);
         }
-        /*hubConnection = new HubConnectionBuilder()
-            .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
-            .Build();
 
-        hubConnection.On<NetHub.eDataType, double>("Data", (t, o) =>
-        {
-            if (t == )
-            {
-                if (t == NetHub.eDataType.SOG || t == NetHub.eDataType.STW)
-                {
-                    var temp = o;
-                    Value = Math.Round((double)o, 2).ToString("#0.00");
-                }
-                else if (t == NetHub.eDataType.COG || t == NetHub.eDataType.Heading || t == NetHub.eDataType.HeadingToWP || t == NetHub.eDataType.Heeling)
-                {
-                    Value = Math.Round(o, 0).ToString("000") + "°";
-                }
-                else if (t == NetHub.eDataType.TimeToStart)
-                {
-                    TimeSpan ts = TimeSpan.FromSeconds(o);
-                    Value = ts.ToString(@"mm\:ss");
-
-                }
-                InvokeAsync(StateHasChanged);
-            }
-        });
-        await hubConnection.StartAsync();
-        await base.OnInitializedAsync();
-        */
+        StartTimestampHour = StartTimestamp.Hour;
+        StartTimestampMinute = StartTimestamp.Minute;
+        StartTimestampSecond = StartTimestamp.Second;
 
     }
 
@@ -88,6 +66,6 @@
     }
     private async Task SetStarttime()
     {
-        netService.StartTimestamp = StartTimestamp;
+        netService.StartTimestamp = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, StartTimestampHour, StartTimestampMinute, StartTimestampSecond);
     }
 }
