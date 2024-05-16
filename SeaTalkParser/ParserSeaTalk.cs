@@ -93,6 +93,7 @@ namespace SeaTalkParser
                     }
                     else if (msg.Contains("MWD"))
                     {
+                        return_val.Add(new MWD(msg));
                         //Wind direction and speed
                         //"YDMWD,128.8,T,124.1,M,2.5,N,1.2,M*58\r\n"
                     }

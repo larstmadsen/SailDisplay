@@ -1,17 +1,103 @@
 ﻿@page "/"
 @page "/Display1"
+@using Microsoft.AspNetCore.SignalR.Client
 @using SailDisplay.Components.Hubs
 
-<div style="height: 24vh">
-    <Field DataType=NetHub.eDataType.TimeToStart></Field>
-</div>
-<div style="height: 24vh">
-    <Field DataType=NetHub.eDataType.TimeToBurn></Field>
-</div>
-<div style="height: 49vh">
-    <FieldVisualStart></FieldVisualStart>
-</div>
+@inject NavigationManager navigationManager
+@inject IConfiguration configuration
+
+
+@if (TimeToStart >= 0)
+{
+    <table>
+        <tbody>
+            <tr>
+                <td style="width: 50%">
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.TimeToStart></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.TimeToBurn></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.DistanceToStartLine></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.SOG></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.TimeNow></Field>
+                    </div>
+                </td>
+                <td style="width: 50%">
+                    <div style="height: 49vh">
+
+                        <FieldVisualStart></FieldVisualStart>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+else
+{
+    <table>
+        <tbody>
+            <tr>
+                <td style="width: 50%">
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.SOG></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.STW></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.Heading></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.TWS></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.WaypointDistance></Field>
+                    </div>
+                </td>
+                <td style="width: 50%">
+                    <div style="height: 49vh">
+
+                        <UpWind></UpWind>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+
 
 @code {
+    private HubConnection? hubConnection;
 
+    private double TimeToStart { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
+            .Build();
+
+        
+        hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
+        {
+            if (t == NetHub.eDataType.TimeToStart)
+            {
+                TimeToStart = o;
+                InvokeAsync(StateHasChanged);
+            }
+
+
+        });
+
+        await hubConnection.StartAsync();
+        await base.OnInitializedAsync();
+
+
+    }
 }

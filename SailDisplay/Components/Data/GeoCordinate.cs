@@ -10,6 +10,9 @@
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
 
+        public double X { get { return Longitude; } }
+        public double Y { get { return Latitude; } }
+
         private double LatitudeWGS84
         {
             get

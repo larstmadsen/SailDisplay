@@ -4,12 +4,14 @@ using SailDisplay.Components.Hubs;
 using SeaTalkParser;
 using SeaTalkNGParser;
 using System.Globalization;
+using System.Text;
 
 namespace SailDisplay.Components.Data
 {
     public class NetService
     {
-        private bool Simulate = false;
+        private bool Simulate = true;
+        private DateTime SimulateFastUntil = new DateTime(2024, 5, 14, 18, 10, 45);
         private static Thread workerThread;
         private static bool workerThreadActive = true;
         private readonly IHubContext<NetHub> _hub;
@@ -37,14 +39,17 @@ namespace SailDisplay.Components.Data
 
         public double RSA { get; private set; } = 0;
 
+        public double WindSpeedTrue { get; private set; }
+        public double WindDirectionTrue { get; private set; }
+        public double WindDirectionMagnetic { get; private set; }
 
-        public DateTime StartTimestamp { get; set; } = DateTime.Now.AddMinutes(10);
+        public DateTime StartTimestamp { get; set; } = new DateTime(2024, 5, 14, 18, 12, 20); //DateTime.Now.AddMinutes(10);
         public double? DistanceToLine { get; private set; } = null;
         public double? TimeToBurn { get; private set; } = null;
 
         public GeoCordinate StartPort { get; set; } = new GeoCordinate(5543.5761, 1236.0715);// new GeoCordinate(5537.484, 1258.904); //55 43.58N 12 36.01E
         public GeoCordinate StartStarboard { get; set; } = new GeoCordinate(5543.5516, 1236.1213); // new GeoCordinate(5537.541, 1259.033); //55 43.58N 12 36.01E
-        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5537.700, 1259.000);
+        public GeoCordinate ActualPosition { get; set; } = new GeoCordinate(5543.4700, 1236.1000);
         public GeoCordinate WaypointPosition { get; set; } = new GeoCordinate(5537.450, 1259.010);
         
         public NetService(IHubContext<NetHub> hub)
@@ -70,6 +75,26 @@ namespace SailDisplay.Components.Data
             {
                 if (Simulate)//Simulate
                 {
+                    using (var fileStream = File.OpenRead(@"c:\temp\SeaTalk_log.txt"))
+                    using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 128))
+                    {
+                        String line;
+                        while ((line = streamReader.ReadLine()) != null)
+                        {
+                            var msgListSeaTalk = ParserSeaTalk.MessageParser(line);
+                            foreach (MessageSeaTalk msg in msgListSeaTalk)
+                            {
+                                await ParseSeTalkMessage(msg);
+                            }
+                            if (TimeNow > SimulateFastUntil)
+                            {
+                                Thread.Sleep(20);
+                            }
+                        }
+                    }
+
+                    
+                    /*
                     Random r = new Random();
 
                     TWS += r.Next(-1, 1) * 0.01;
@@ -144,40 +169,102 @@ namespace SailDisplay.Components.Data
                     await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.TimeToBurn, TimeToBurn);
 
                     Thread.Sleep(500);
+                    */
                 }
                 else
                 {
                     var msgSeaTalk = dsSeaTalk.Read();
-                 
                     var msgListSeaTalk = ParserSeaTalk.MessageParser(msgSeaTalk);
-
                     foreach (MessageSeaTalk msg in msgListSeaTalk)
                     {
                         await ParseSeTalkMessage(msg);
-
                     }
+                    await Log(msgSeaTalk, "SeaTalk");
 
                     var msgSeaTalkNG = dsSeaTalkNG.Read();
-
                     var msgListSeaTalkNG = ParserSeaTalkNG.MessageParser(msgSeaTalkNG);
-
                     foreach (MessageSeaTalkNG msg in msgListSeaTalkNG)
                     {
                         await ParseSeTalkNGMessage(msg);
-
                     }
+                    await Log(msgSeaTalkNG, "SeaTalkNG");
                 }
 
-
+                
 
             }
+        }
+
+        public async Task Log(string msg, string type)
+        {
+            try
+            {
+                if(msg != null && msg.Length > 0 && !Simulate) 
+                { 
+                    //using (StreamWriter outputFile = new StreamWriter(Path.Combine("/home/admin/ww", "log.txt"), true))
+                    using (StreamWriter outputFile = new StreamWriter(Path.Combine(@"c:\temp\", type + "_log.txt"), true))
+                    {
+                        outputFile.WriteLine(msg);
+                    }
+                }
+            }
+            catch
+            { }
         }
 
         public async Task ParseSeTalkMessage(MessageSeaTalk msg)
         {
             if (msg == null)
             {
-                Thread.Sleep(50);
+                if (!Simulate)
+                {
+                    Thread.Sleep(50);
+                }
+            }
+            else if (msg.Type == MessageType.RMC)
+            {
+                var m = (RMC)msg;
+                DateTime dt = /*DateTime.Now;//*/ DateTime.ParseExact(m.Date.ToString("000000") + " " + m.TimeUTC.ToString("000000.00"), "ddMMyy HHmmss.ff", new CultureInfo("en-US"), DateTimeStyles.None);
+                dt = dt.AddHours(2);
+
+                TimeNow = dt;
+
+                TimeSpan ts = StartTimestamp - dt;
+                await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TimeToStart, ts.TotalSeconds);
+                await _hub.Clients.All.SendAsync("DateTime", NetHub.eDataType.TimeNow, dt);
+
+
+                ActualPosition = new GeoCordinate(m.Latitude, m.Longitude);
+                await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.Position, ActualPosition);
+
+                GeoLine glStart = new GeoLine(StartPort, StartStarboard);
+                GeoLine glActual = new GeoLine(ActualPosition, CTW);
+
+                GeoCordinate cross = glStart.CrossingPoint(glActual);
+                if (cross != null)
+                {
+                    DistanceToLine = ActualPosition.GetDistanceTo_Meter(cross);
+                }
+                else
+                {
+                    DistanceToLine = null;
+                }
+                await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.DistanceToStartLine, DistanceToLine);
+
+                if (DistanceToLine != null && DistanceToLine >= 0 && SOG > 0)
+                {
+                    TimeToBurn = ts.TotalSeconds - (Converters.ToNauticMiles((double)DistanceToLine) / SOG) * 60 * 60;
+                }
+                else
+                {
+                    TimeToBurn = null;
+                }
+                await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.TimeToBurn, TimeToBurn);
+
+            }
+            else if (Simulate && SimulateFastUntil > TimeNow)
+            { 
+            
             }
             else if (msg.Type == MessageType.VWT)
             {
@@ -217,8 +304,11 @@ namespace SailDisplay.Components.Data
                 var m = (VHW)msg;
                 STW = m.SpeedRelativeToWater;
                 CTW = m.HeadingMagnetic;
+                Heading = m.HeadingMagnetic;
                 await _hub.Clients.All.SendAsync("double", NetHub.eDataType.STW, STW);
                 await _hub.Clients.All.SendAsync("double", NetHub.eDataType.CTW, CTW);
+                await _hub.Clients.All.SendAsync("double", NetHub.eDataType.Heading, Heading);
+
 
                 //Speed.Add(m.SpeedRelativeToWater);
                 //Heading.Add(m.HeadingMagnetic);
@@ -244,7 +334,7 @@ namespace SailDisplay.Components.Data
             }
             else if (msg.Type == MessageType.GGA)
             {
-                var m = (GGA)msg;
+/*                var m = (GGA)msg;
                 ActualPosition = new GeoCordinate(m.Latitude, m.Longitude);
                 await _hub.Clients.All.SendAsync("GeoCordinate", NetHub.eDataType.Position, ActualPosition);
 
@@ -272,14 +362,8 @@ namespace SailDisplay.Components.Data
                     TimeToBurn = null;
                 }
                 await _hub.Clients.All.SendAsync("double?", NetHub.eDataType.TimeToBurn, TimeToBurn);
+*/
 
-
-                /*Longitude.Add(m.Longitude);
-                Latitude.Add(m.Latitude);
-                ActualPosition = new GeoCordinate(m.Latitude, m.Longitude);
-                var dist = Math.Round(ActualPosition.GetDistanceTo_Meter(StartPort), 4);
-                var distNM = Math.Round(ActualPosition.GetDistanceTo_NauticMiles(StartPort), 4);
-                DistanceToStart.Add(dist);*/
             }
             else if (msg.Type == MessageType.RMB)
             {
@@ -300,17 +384,18 @@ namespace SailDisplay.Components.Data
                 WaypointHeading.Add(m.Heading);
                 StartPort = new GeoCordinate(m.Latitude, m.Longitude);*/
             }
-            else if (msg.Type == MessageType.RMC)
+            else if (msg.Type == MessageType.MWD)
             {
-                var m = (RMC)msg;
-                DateTime dt = /*DateTime.Now;//*/ DateTime.ParseExact(m.Date.ToString("000000") + " " + m.TimeUTC.ToString("000000.00"), "ddMMyy HHmmss.ff", new CultureInfo("en-US"), DateTimeStyles.None);
-                dt = dt.AddHours(2);
+                var m = (MWD)msg;
 
-                TimeNow = dt;
+                WindSpeedTrue = m.WindSpeedTrue;
+                WindDirectionTrue = m.WindDirectionTrue;
+                WindDirectionMagnetic = m.WindDirectionMagnetic;
 
-                TimeSpan ts = StartTimestamp - dt;
-                await _hub.Clients.All.SendAsync("double", NetHub.eDataType.TimeToStart, ts.TotalSeconds);
-                await _hub.Clients.All.SendAsync("DateTime", NetHub.eDataType.TimeNow, dt);
+                await _hub.Clients.All.SendAsync("double", NetHub.eDataType.WindSpeedTrue, WindSpeedTrue);
+                await _hub.Clients.All.SendAsync("double", NetHub.eDataType.WindDirectionTrue, WindDirectionTrue);
+                await _hub.Clients.All.SendAsync("double", NetHub.eDataType.WindDirectionMagnetic, WindDirectionMagnetic);
+
 
                 //dt = dt.AddHours(2);
                 //LocalTime.Add(dt.Ticks);

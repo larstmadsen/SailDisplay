@@ -107,7 +107,30 @@
         hubConnection = new HubConnectionBuilder()
             .WithUrl(navigationManager.ToAbsoluteUri("/nethub"))//configuration["NetHubURI"]))
             .Build();
-
+        hubConnection.On<NetHub.eDataType, DateTime>("DateTime", (t, o) =>
+        {
+            if (t == DataType)
+            {
+                if (t == NetHub.eDataType.TimeNow)
+                {
+                    var temp = (DateTime)o;
+                    Value = temp.ToLongTimeString();
+                }
+                InvokeAsync(StateHasChanged);
+            }
+        });
+        hubConnection.On<NetHub.eDataType, GeoCordinate>("GeoCordinate", (t, o) =>
+        {
+            if (t == DataType)
+            {
+                if (t == NetHub.eDataType.Position)
+                {
+                    var temp = (GeoCordinate)o;
+                    Value = o.Latitude + " / " + o.Longitude;
+                }
+                InvokeAsync(StateHasChanged);
+            }
+        });
         hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
         {
             if (t == DataType)
@@ -131,7 +154,6 @@
                     TimeSpan ts = TimeSpan.FromSeconds(o);
                     Value = ts.ToString(@"mm\:ss");
                 }
-
                 InvokeAsync(StateHasChanged);
             }
         });

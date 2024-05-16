@@ -10,6 +10,7 @@ namespace SailDisplay.Components.Hubs
             DBS, //depth below surface 
             RSA, //Rudder Angel
             Heeling, TimeToStart, DistanceToStartLine, TimeToBurn, Position, StartMarkStarboard, StartMarkPort,
+            WindSpeedTrue, WindDirectionTrue, WindDirectionMagnetic,
             WaypointBearing,
             WaypointDistance,
             WaypointPosition}

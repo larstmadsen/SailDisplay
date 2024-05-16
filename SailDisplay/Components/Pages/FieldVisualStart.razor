@@ -13,11 +13,11 @@
 @if (Position != null && MarkPort != null && MarkStarboard != null)
 {
     <svg height="500" width="500" xmlns="http://www.w3.org/2000/svg">
-            <g transform="translate(@(TransformLongitude_0_1000(MarkPort.Longitude)/2),@(TransformLatitude_0_1000(MarkPort.Latitude)/2)) rotate(@TWA) ">
+            <g transform="translate(@(TransformLongitude_0_1000(MarkPort.Longitude)/2),@(TransformLatitude_0_1000(MarkPort.Latitude)/2)) rotate(@WindDirection) ">
                 <path id="lineAB" d="M 0 0 l @(500*Math.Sin((45) * Math.PI / 180.0)) @(500*Math.Cos((45) * Math.PI / 180.0))" stroke="green" stroke-width="4" />
                 <path id="lineAB" d="M 0 0 l @(500*Math.Sin((-45) * Math.PI / 180.0)) @(500*Math.Cos((-45) * Math.PI / 180.0))" stroke="red" stroke-width="4" />
             </g>
-            <g transform="translate(@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2),@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)) rotate(@TWA) ">
+            <g transform="translate(@(TransformLongitude_0_1000(MarkStarboard.Longitude)/2),@(TransformLatitude_0_1000(MarkStarboard.Latitude)/2)) rotate(@WindDirection) ">
                 <path id="lineAB" d="M 0 0 l @(500*Math.Sin((45) * Math.PI / 180.0)) @(500*Math.Cos((45) * Math.PI / 180.0))" stroke="green" stroke-width="4" />
                 <path id="lineAB" d="M 0 0 l @(500*Math.Sin((-45) * Math.PI / 180.0)) @(500*Math.Cos((-45) * Math.PI / 180.0))" stroke="red" stroke-width="4" />
             </g>
@@ -32,7 +32,7 @@
 
             @if (StartLineCrossingPoint != null)
             {
-                <line x1="@(TransformLongitude_0_1000(Position.Longitude)/2)" y1="@(TransformLatitude_0_1000(Position.Latitude)/2)" x2="@(TransformLongitude_0_1000(StartLineCrossingPoint.Longitude)/2)" y2="@(TransformLatitude_0_1000(StartLineCrossingPoint.Latitude)/2)" style="stroke: white;stroke-width:3"></line>
+                <line x1="@(TransformLongitude_0_1000(Position.Longitude)/2)" y1="@(TransformLatitude_0_1000(Position.Latitude)/2)" x2="@(TransformLongitude_0_1000(StartLineCrossingPoint.Longitude)/2)" y2="@(TransformLatitude_0_1000(StartLineCrossingPoint.Latitude)/2)" style="stroke: gray;stroke-width:3"></line>
             }
             <g transform="translate(@(TransformLongitude_0_1000(Position.Longitude)/2),@(TransformLatitude_0_1000(Position.Latitude)/2)) rotate(@Heading) ">
                 <path id="lineAB" d="M -15 60 q -3 -40 15 -70" stroke="blue" fill="none" stroke-width="4" />
@@ -53,14 +53,8 @@
     private GeoCordinate WaypointPosition { get; set; }
     private double Heading { get; set; }
     private double COG { get; set; }
-    private double TWA { get; set; }
-    private double LaylineAngelStarboard
-    {
-        get
-        {
-            return TWA - 45 % 360;
-        }
-    }
+    private double WindDirection { get; set; }
+    
 
     private double TransformLongitude_0_1000(double x)
     {
@@ -158,9 +152,9 @@
 
         hubConnection.On<NetHub.eDataType, double>("double", (t, o) =>
         {
-            if (t == NetHub.eDataType.TWA)
+            if (t == NetHub.eDataType.WindDirectionMagnetic)
             {
-                TWA = o;
+                WindDirection = o;
                 InvokeAsync(StateHasChanged);
             }
             else if (t == NetHub.eDataType.Heading)

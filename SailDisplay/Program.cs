@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Hosting;
+//using Microsoft.AspNetCore.Hosting;
 using SailDisplay.Components;
 using SailDisplay.Components.Data;
 using SailDisplay.Components.Hubs;
-using System.Reflection.PortableExecutable;
+//using System.Reflection.PortableExecutable;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //builder.WebHost.UseUrls("http://*:5000;https://*:5001");
-builder.WebHost.UseUrls("http://*:5000");
+//builder.WebHost.UseUrls("http://*:5000");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
