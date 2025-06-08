@@ -73,7 +73,7 @@ namespace SailDisplay.Components.Data
         {
             while (workerThreadActive)
             {
-                if (Simulate)//Simulate
+                if (Simulate) //Simulate
                 {
                     using (var fileStream = File.OpenRead(@"c:\temp\SeaTalk_log.txt"))
                     using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, 128))
