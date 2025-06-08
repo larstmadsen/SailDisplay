@@ -9,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.WebHost.UseUrls("http://*:5000;https://*:5001");
 //builder.WebHost.UseUrls("http://*:5000");
 
+builder.WebHost.UseUrls("http://0.0.0.0:5000;https://0.0.0.0:5001");
+
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
