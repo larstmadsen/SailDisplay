@@ -1,9 +1,10 @@
-name: Deploy SailDisplay to Raspberry Pi
+name: Build and Release SailDisplay for Raspberry Pi
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -22,21 +23,18 @@ jobs:
       run: |
         dotnet publish SailDisplay/SailDisplay.csproj -c Release -r linux-arm64 --self-contained true -p:PublishSingleFile=true -o publish
 
-    - name: Copy files to Raspberry Pi
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.PI_HOST }}
-        username: ${{ secrets.PI_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        source: "publish/"
-        target: ${{ secrets.PI_APP_PATH }}
-        strip_components: 1
+    - name: Zip published output
+      run: |
+        cd publish
+        zip -r ../SailDisplay.zip .
 
-    - name: Restart SailDisplay on Raspberry Pi
-      uses: appleboy/ssh-action@v1.0.0
+    - name: Create or update GitHub release
+      uses: softprops/action-gh-release@v2
       with:
-        host: ${{ secrets.PI_HOST }}
-        username: ${{ secrets.PI_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          sudo systemctl restart saildisplay
+        tag_name: latest
+        name: Latest Release
+        files: SailDisplay.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
