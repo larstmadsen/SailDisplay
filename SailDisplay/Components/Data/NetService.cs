@@ -10,7 +10,7 @@ namespace SailDisplay.Components.Data
 {
     public class NetService
     {
-        private bool Simulate = true;
+        private bool Simulate = false;
         private DateTime SimulateFastUntil = new DateTime(2024, 5, 14, 18, 10, 45);
         private static Thread workerThread;
         private static bool workerThreadActive = true;
@@ -43,7 +43,7 @@ namespace SailDisplay.Components.Data
         public double WindDirectionTrue { get; private set; }
         public double WindDirectionMagnetic { get; private set; }
 
-        public DateTime StartTimestamp { get; set; } = new DateTime(2024, 5, 14, 18, 12, 20); //DateTime.Now.AddMinutes(10);
+        public DateTime StartTimestamp { get; set; } = new DateTime(2025, 6, 8, 18, 12, 13); //DateTime.Now.AddMinutes(10);
         public double? DistanceToLine { get; private set; } = null;
         public double? TimeToBurn { get; private set; } = null;
 
