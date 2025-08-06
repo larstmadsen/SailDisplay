@@ -10,7 +10,7 @@ namespace SailDisplay.Components.Data
 {
     public class NetService
     {
-        private bool Simulate = false;
+        private bool Simulate = true;
         private DateTime SimulateFastUntil = new DateTime(2024, 5, 14, 18, 10, 45);
         private static Thread workerThread;
         private static bool workerThreadActive = true;
@@ -43,7 +43,7 @@ namespace SailDisplay.Components.Data
         public double WindDirectionTrue { get; private set; }
         public double WindDirectionMagnetic { get; private set; }
 
-        public DateTime StartTimestamp { get; set; } = new DateTime(2025, 6, 8, 18, 12, 13); //DateTime.Now.AddMinutes(10);
+        public DateTime StartTimestamp { get; set; }
         public double? DistanceToLine { get; private set; } = null;
         public double? TimeToBurn { get; private set; } = null;
 
@@ -55,8 +55,16 @@ namespace SailDisplay.Components.Data
         public NetService(IHubContext<NetHub> hub)
         {
             _hub = hub;
-            if (!Simulate) //False = Simulate
+            if(Simulate)
             {
+                StartTimestamp = new DateTime(2024, 5, 14, 18, 12, 20);
+
+            }    
+            else
+            {
+                DateTime tsNow = DateTime.Now;
+                StartTimestamp = new DateTime(tsNow.Year, tsNow.Month, tsNow.Day, 18, 12, 20);
+
                 dsSeaTalk = new YachtDevice.YachtDevice();
                 dsSeaTalk.Connect("192.168.4.1", 1456);
 

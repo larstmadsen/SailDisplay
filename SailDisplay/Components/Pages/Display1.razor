@@ -12,7 +12,7 @@
     <table>
         <tbody>
             <tr>
-                <td style="width: 50%">
+                <td style="width: 25%">
                     <div style="height: 24vh">
                         <Field DataType=NetHub.eDataType.TimeToStart></Field>
                     </div>
@@ -22,17 +22,22 @@
                     <div style="height: 24vh">
                         <Field DataType=NetHub.eDataType.DistanceToStartLine></Field>
                     </div>
-                    <div style="height: 24vh">
-                        <Field DataType=NetHub.eDataType.SOG></Field>
-                    </div>
-                    <div style="height: 24vh">
-                        <Field DataType=NetHub.eDataType.TimeNow></Field>
-                    </div>
                 </td>
                 <td style="width: 50%">
                     <div style="height: 49vh">
 
                         <FieldVisualStart></FieldVisualStart>
+                    </div>
+                </td>
+                <td style="width: 25%">
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.SOG></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.STW></Field>
+                    </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.TimeNow></Field>
                     </div>
                 </td>
             </tr>
@@ -44,13 +49,24 @@ else
     <table>
         <tbody>
             <tr>
-                <td style="width: 50%">
+                <td style="width: 25%">
                     <div style="height: 24vh">
                         <Field DataType=NetHub.eDataType.SOG></Field>
                     </div>
                     <div style="height: 24vh">
                         <Field DataType=NetHub.eDataType.STW></Field>
                     </div>
+                    <div style="height: 24vh">
+                        <Field DataType=NetHub.eDataType.Heeling></Field>
+                    </div>
+                </td>
+                <td style="width: 50%">
+                    <div style="height: 49vh">
+
+                        <UpWind></UpWind>
+                    </div>
+                </td>
+                <td style="width: 25%">
                     <div style="height: 24vh">
                         <Field DataType=NetHub.eDataType.Heading></Field>
                     </div>
@@ -59,12 +75,6 @@ else
                     </div>
                     <div style="height: 24vh">
                         <Field DataType=NetHub.eDataType.WaypointDistance></Field>
-                    </div>
-                </td>
-                <td style="width: 50%">
-                    <div style="height: 49vh">
-
-                        <UpWind></UpWind>
                     </div>
                 </td>
             </tr>
