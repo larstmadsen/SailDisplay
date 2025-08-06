@@ -17,11 +17,11 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.16'
+        dotnet-version: '8.0.x'
 
     - name: Publish SailDisplay Blazor Server app
       run: |
-        dotnet publish SailDisplay/SailDisplay.csproj -c Release -r linux-arm64 --self-contained false -p:PublishSingleFile=false -o publish
+        dotnet publish SailDisplay/SailDisplay.csproj -c Release -r linux-arm64 --self-contained true -p:PublishSingleFile=true -o publish
 
     - name: Zip published output
       run: |
