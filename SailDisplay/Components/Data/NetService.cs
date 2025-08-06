@@ -10,7 +10,7 @@ namespace SailDisplay.Components.Data
 {
     public class NetService
     {
-        private bool Simulate = true;
+        private bool Simulate = false;
         private DateTime SimulateFastUntil = new DateTime(2024, 5, 14, 18, 10, 45);
         private static Thread workerThread;
         private static bool workerThreadActive = true;
@@ -205,6 +205,7 @@ namespace SailDisplay.Components.Data
 
         public async Task Log(string msg, string type)
         {
+            return;
             try
             {
                 if(msg != null && msg.Length > 0 && !Simulate) 
