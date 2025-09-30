@@ -10,8 +10,8 @@ namespace SailDisplay.Components.Data
 {
     public class NetService
     {
-        private bool Simulate = false;
-        private DateTime SimulateFastUntil = new DateTime(2024, 5, 14, 18, 10, 45);
+        private bool Simulate = true;
+        private DateTime SimulateFastUntil = new DateTime(2024, 5, 14, 18, 12, 45);
         private static Thread workerThread;
         private static bool workerThreadActive = true;
         private readonly IHubContext<NetHub> _hub;
@@ -211,7 +211,7 @@ namespace SailDisplay.Components.Data
                 if(msg != null && msg.Length > 0 && !Simulate) 
                 { 
                     //using (StreamWriter outputFile = new StreamWriter(Path.Combine("/home/admin/ww", "log.txt"), true))
-                    using (StreamWriter outputFile = new StreamWriter(Path.Combine(@"c:\temp\", type + "_log.txt"), true))
+                    using (StreamWriter outputFile = new StreamWriter(Path.Combine(@"/home/admin/saildisplay/", type + "_log.txt"), true))
                     {
                         outputFile.WriteLine(msg);
                     }
